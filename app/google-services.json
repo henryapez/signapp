@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "539767394929",
+    "firebase_url": "https://signapp-aab9e.firebaseio.com",
+    "project_id": "signapp-aab9e",
+    "storage_bucket": "signapp-aab9e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:539767394929:android:6f0d7a2b30ba1adb",
+        "android_client_info": {
+          "package_name": "com.henry.signapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "539767394929-p4jdjsijprpkb5auqnabkknvopqfam2q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.henry.signapp",
+            "certificate_hash": "F9E27D7AF2DC5EF171A7015A560322682012A3D0"
+          }
+        },
+        {
+          "client_id": "539767394929-1j253nv12lue0r162ni3vc4g5j8drp07.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6QB_XdpjkIkAtveRHG3BP0yJ3QTNuOuI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "539767394929-1j253nv12lue0r162ni3vc4g5j8drp07.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

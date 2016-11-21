@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp">
+
+        <TextView
+            android:id="@+id/student"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="@string/student"/>
+        <TextView
+            android:id="@+id/totalScoreTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textSize="15sp"
+            android:text="@string/totalScore"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="36dp">
+
+        <Button
+            android:id="@+id/deckButton"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="@string/deckButton"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/masteredButton"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="@string/masteredButton"/>
+
+    </LinearLayout>
+    <ListView
+        android:id="@+id/decks"
+        android:layout_width="match_parent"
+        android:layout_height="244dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="132dp">
+    </ListView>
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="170dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="620dp">
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/practiceButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/practiceButton"
+        android:onClick="practiceClicked"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/decks"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="105dp" />
+
+    <Button
+        android:id="@+id/firebase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/firebase"
+        android:onClick="firebase"
+        android:layout_gravity="right"
+        android:layout_below="@+id/decks"
+        android:layout_toEndOf="@+id/practiceButton" />
+
+</RelativeLayout>

@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">SignApp</string>
+
+    <string name="email">Email: </string>
+    <string name="password">Password: </string>
+    <string name="loginButton">Login</string>
+
+    <string name="title_activity_homepage">Homepage</string>
+    <string name="student">Welcome Student</string>
+    <string name="totalScore">Total Score: 0 / 100</string>
+    <string name="deckButton">My Deck</string>
+    <string name="masteredButton">Mastered Signs</string>
+    <string name="practiceButton">Practice</string>
+    <string name="firebase">Firebase</string>
+
+    <string name="answersButton">Click for answers</string>
+</resources>
