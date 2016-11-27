@@ -32,23 +32,23 @@ public class Practice extends AppCompatActivity {
         WebView wv = (WebView) findViewById(R.id.signGif);
         wv.loadUrl("http://www.lifeprint.com/asl101/gifs-animated/all.gif");
 
-        mGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/gifs");
+        //mGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/gifs");
 
 
-        String gifs = "100,";
-               
-        //649 TERMS TOTAL
-        String[] array =  gifs.split(",");
-        Toast.makeText(this, array.length + "   " + array[3], Toast.LENGTH_SHORT).show();
-        for(int i=0; i<array.length; i++){
-            if(!array[i].contains(".") && !array[i].contains("#")
-                    && !array[i].contains("$") && !array[i].contains("[") && !array[i].contains("]")){
-                Firebase childRef = mGifsRef.child(array[i]);
-                childRef.setValue(array[i] + ".gif");
-            }
-
-
-        }
+//        String gifs = "100,";
+//
+//        //649 TERMS TOTAL
+//        String[] array =  gifs.split(",");
+//        Toast.makeText(this, array.length + "   " + array[0], Toast.LENGTH_SHORT).show();
+//        for(int i=0; i<array.length; i++){
+//            if(!array[i].contains(".") && !array[i].contains("#")
+//                    && !array[i].contains("$") && !array[i].contains("[") && !array[i].contains("]")){
+//                Firebase childRef = mGifsRef.child(array[i]);
+//                childRef.setValue(array[i] + ".gif");
+//            }
+//
+//
+//        }
     }
 
     //show answers button listener
