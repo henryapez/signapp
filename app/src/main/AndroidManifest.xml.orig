@@ -19,9 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
         <activity android:name=".Homepage" />
         <activity android:name=".Practice" />
-
+        <activity android:name=".SignApp"></activity>
+=======
+        <activity android:name=".Homepage"></activity>
+        <activity android:name=".Practice"></activity>
+>>>>>>> cf1d635a3141812f7cb68d7b084bdb7abc4c07b5
     </application>
 
 </manifest>
