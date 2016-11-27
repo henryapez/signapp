@@ -14,7 +14,7 @@
         android:layout_marginTop="0dp">
 
         <TextView
-            android:id="@+id/student"
+            android:id="@+id/welcomeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -87,11 +87,11 @@
         android:layout_marginStart="105dp" />
 
     <Button
-        android:id="@+id/firebase"
+        android:id="@+id/logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/firebase"
-        android:onClick="firebase"
+        android:text="Logout"
+        android:onClick="logout"
         android:layout_gravity="right"
         android:layout_below="@+id/decks"
         android:layout_toEndOf="@+id/practiceButton" />
