@@ -89,6 +89,19 @@
         android:layout_marginLeft="105dp"/>
 
     <Button
+        android:id="@+id/Swipe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/swipe"
+        android:onClick="swipe"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/practiceButton"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginStart="105dp"
+        android:layout_marginLeft="105dp"/>
+
+    <Button
         android:id="@+id/logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -96,6 +109,7 @@
         android:onClick="logout"
         android:layout_gravity="right"
         android:layout_below="@+id/categoryList"
-        android:layout_toEndOf="@+id/practiceButton" />
+        android:layout_toEndOf="@+id/practiceButton"
+        android:layout_toRightOf="@+id/practiceButton"/>
 
 </RelativeLayout>

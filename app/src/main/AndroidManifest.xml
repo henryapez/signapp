@@ -21,6 +21,8 @@
         </activity>
         <activity android:name=".Homepage" />
         <activity android:name=".Practice" />
+        <activity android:name=".CardSwiping" />
+
 
     </application>
 

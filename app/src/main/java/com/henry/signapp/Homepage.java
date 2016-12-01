@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,7 +30,8 @@ public class Homepage extends AppCompatActivity {
     //ListView displaying list in Homepage
     private ArrayList<String> categories = new ArrayList<String>();
     private ListView categoriesListView;
-
+    float x1,x2;
+    float y1, y2;
 
     //list arrays for testing
     private String[] decks = {"Alphabet & Numbers", "Shapes", "Colors"};
@@ -103,8 +105,61 @@ public class Homepage extends AppCompatActivity {
 
     }
 
+    // onTouchEvent () method gets called when User performs any touch event on screen
+    // Method to handle touch event like left to right swap and right to left swap
+    public boolean onTouchEvent(MotionEvent touchevent)
+    {
+        switch (touchevent.getAction())
+        {
+            // when user first touches the screen we get x and y coordinate
+            case MotionEvent.ACTION_DOWN:
+            {
+                x1 = touchevent.getX();
+                y1 = touchevent.getY();
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+            {
+                x2 = touchevent.getX();
+                y2 = touchevent.getY();
+
+                //if left to right sweep event on screen
+                if (x1 < x2)
+                {
+                    Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
+                }
+
+                // if right to left sweep event on screen
+                if (x1 > x2)
+                {
+                    Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
+                }
+
+                // if UP to Down sweep event on screen
+                if (y1 < y2)
+                {
+                    Toast.makeText(this, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
+                }
+
+                //if Down to UP sweep event on screen
+                if (y1 > y2)
+                {
+                    Toast.makeText(this, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+        }
+        return false;
+    }
 
 
+
+    //practice button listener
+    public void swipe(View view){
+        Intent practiceIntent = new Intent(this, CardSwiping.class);
+
+        startActivity(practiceIntent);
+    }
 
     //practice button listener
     public void practiceClicked(View view){
