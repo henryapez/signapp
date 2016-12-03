@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
@@ -7,11 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="0dp">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/welcomeText"
@@ -26,90 +22,67 @@
             android:gravity="end"
             android:textSize="15sp"
             android:text="@string/totalScore"/>
-
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/allGifs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/allGifsButton"
+            android:onClick="allGifsClicked"/>
+
+        <Button
+            android:id="@+id/myDeckButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/myDeckButton"
+            android:onClick="myDeckClicked"/>
+        <Button
+            android:id="@+id/masteredButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/masteredButton"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/listTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"/>
+    <ListView
+        android:id="@+id/deckList"
+        android:layout_width="match_parent"
+        android:layout_height="320dp">
+    </ListView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="36dp">
+        android:gravity="center">
 
         <Button
-            android:id="@+id/deckButton"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:text="@string/deckButton"/>
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-        <Button
-            android:id="@+id/masteredButton"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:text="@string/masteredButton"/>
-
-    </LinearLayout>
-    <ListView
-        android:id="@+id/categoryList"
-        android:layout_width="match_parent"
-        android:layout_height="244dp"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="132dp">
-    </ListView>
-
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="170dp"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="0dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="620dp">
-
-    </LinearLayout>
-
-    <Button
         android:id="@+id/practiceButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/practiceButton"
-        android:onClick="practiceClicked"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/categoryList"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="105dp"
-        android:layout_marginLeft="105dp"/>
-
+        android:onClick="practiceClicked"/>
+        <Button
+            android:id="@+id/logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/logoutButton"
+            android:onClick="logout"/>
+    </LinearLayout>
     <Button
         android:id="@+id/Swipe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/swipe"
         android:onClick="swipe"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/practiceButton"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="105dp"
-        android:layout_marginLeft="105dp"/>
+        android:layout_gravity="center_horizontal"/>
 
-    <Button
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        android:onClick="logout"
-        android:layout_gravity="right"
-        android:layout_below="@+id/categoryList"
-        android:layout_toEndOf="@+id/practiceButton"
-        android:layout_toRightOf="@+id/practiceButton"/>
-
-</RelativeLayout>
+</LinearLayout>
