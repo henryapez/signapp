@@ -46,7 +46,7 @@ public class Practice extends AppCompatActivity {
         //Get ImageView in Practice
                v = (ImageView) findViewById(R.id.imageVieww);
 
-       // Glide.with(this).load("http://www.lifeprint.com/asl101/gifs-animated/all.gif").fitCenter().into(v);
+       Glide.with(this).load("http://www.lifeprint.com/asl101/gifs-animated/all.gif").fitCenter().into(v);
 //        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener());
 //        v.setOnTouchListener(new View.OnTouchListener() {
 //            @Override

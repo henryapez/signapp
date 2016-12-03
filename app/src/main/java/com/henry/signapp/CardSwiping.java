@@ -68,8 +68,7 @@ public class CardSwiping extends AppCompatActivity {
             }
         });
 
-        cardStack.setLeftImage(R.id.left_image);
-        cardStack.setRightImage(R.id.right_image);
+
 
         //example of buttons triggering events on the deck
         Button btn = (Button) findViewById(R.id.button);
@@ -102,45 +101,36 @@ public class CardSwiping extends AppCompatActivity {
     }
 
     // onTouchEvent () method gets called when User performs any touch event on screen
-    // Method to handle touch event like left to right swap and right to left swap
+    // Handled left and right swipe ONLY when one card is present
+    //If multiple card are present, there are multiple View layers. Touch events are detected in the SwipeDeckAdapter
     @Override
     public boolean onTouchEvent(MotionEvent touchevent)
     {
-        switch (touchevent.getAction())
-        {
+        switch (touchevent.getAction()) {
             // when user first touches the screen we get x and y coordinate
-            case MotionEvent.ACTION_DOWN:
-            {
+            case MotionEvent.ACTION_DOWN: {
                 x1 = touchevent.getX();
                 y1 = touchevent.getY();
-                break;
-            }
-            case MotionEvent.ACTION_UP:
-            {
+                break;}
+            case MotionEvent.ACTION_UP: {
                 x2 = touchevent.getX();
                 y2 = touchevent.getY();
-
-                //if left to right sweep event on screen
-                if (x1 < x2)
-                {
+                //if Right swipe when only one card is visible
+                if (x1 < x2) {
+                    cardStack.swipeTopCardRight(180);
                     Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
                 }
-
-                // if right to left sweep event on screen
-                if (x1 > x2)
-                {
+                //Left swipe when only one card is visible
+                if (x1 > x2) {
+                    cardStack.swipeTopCardLeft(180);
                     Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
                 }
-
                 // if UP to Down sweep event on screen
-                if (y1 < y2)
-                {
+                if (y1 < y2) {
                     Toast.makeText(this, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
                 }
-
                 //if Down to UP sweep event on screen
-                if (y1 > y2)
-                {
+                if (y1 > y2) {
                     Toast.makeText(this, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
                 }
                 break;
@@ -201,8 +191,13 @@ public class CardSwiping extends AppCompatActivity {
             }
         }
         public void onSwipeRight() {
+
+            Toast.makeText(context, "Right Swipe detected", Toast.LENGTH_LONG).show();
+            cardStack.swipeTopCardRight(180);
         }
         public void onSwipeLeft() {
+            Toast.makeText(context, "Left Swipe detected", Toast.LENGTH_LONG).show();
+            cardStack.swipeTopCardLeft(180);
         }
         public void onSwipeTop() {
         }
@@ -247,17 +242,30 @@ public class CardSwiping extends AppCompatActivity {
             }
 
             ImageView imageView = (ImageView) v.findViewById(R.id.offer_image);
-            Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
-            //Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/all.gif").into(imageView);
+            //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
+            Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/all.gif").into(imageView);
             TextView textView = (TextView) v.findViewById(R.id.sample_text);
+            TextView masteredText = (TextView) v.findViewById(R.id.left_image);
+            TextView practiceText = (TextView) v.findViewById(R.id.right_image);
             String item = (String)getItem(position);
+            masteredText.setText("Mastered Sign");
+            practiceText.setText("Keep Practicing");
             textView.setText(item);
 
-            v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.i("Layer type: ", Integer.toString(v.getLayerType()));
-                    Log.i("Hardware Accel type:", Integer.toString(View.LAYER_TYPE_HARDWARE));
+            v.setOnTouchListener(new OnSwipeTouchListener(context) {
+                String answer ="";
+                public void onSwipeTop() {
+                    answer = "top";
+                    Log.i("Hardware Accel type:", answer);
+                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
+
+                }
+
+                public void onSwipeBottom() {
+                    answer = "bottom";
+                    Log.i("Hardware Accel type:", answer);
+                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
+
                 }
             });
 
@@ -269,18 +277,7 @@ public class CardSwiping extends AppCompatActivity {
                     Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
 
                 }
-                public void onSwipeRight() {
-                    answer = "right";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "ggggg", Toast.LENGTH_LONG).show();
-                    cardStack.swipeTopCardRight(180);
-                }
-                public void onSwipeLeft() {
-                    answer = "left";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "ggggg", Toast.LENGTH_LONG).show();
-                    cardStack.swipeTopCardLeft(180);
-                }
+
                 public void onSwipeBottom() {
                     answer = "bottom";
                     Log.i("Hardware Accel type:", answer);

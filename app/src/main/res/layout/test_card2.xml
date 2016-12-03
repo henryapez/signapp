@@ -5,7 +5,7 @@
     android:id="@+id/card_view"
     android:layout_gravity="center"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     card_view:cardCornerRadius="4dp"
     card_view:cardElevation="4dp"
     card_view:cardUseCompatPadding="true"
@@ -15,17 +15,19 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:weightSum="1">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="325dp"
+            android:layout_weight="0.78">
             <ImageView
                 tools:src="@drawable/food"
                 android:id="@+id/offer_image"
                 android:layout_width="match_parent"
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true"
-                android:layout_height="200dp" />
+                android:layout_height="match_parent" />
         </RelativeLayout>
 
         <LinearLayout
@@ -33,23 +35,28 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center">
-            <ImageView
+            <TextView
                 android:layout_weight="1"
                 android:id="@+id/left_image"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/left_arrow"
+                android:layout_height="43dp"
+                android:text="Keep Practicing"
                 android:layout_below="@id/offer_image"
+                android:gravity="center_horizontal"
                 android:layout_centerHorizontal="true" />
-            <ImageView
+
+            <TextView
                 android:layout_weight="1"
                 android:id="@+id/right_image"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/right_arrow"
+                android:layout_height="41dp"
+                android:text="Master this one"
                 android:layout_below="@+id/offer_image"
+                android:gravity="center_horizontal"
                 android:layout_centerHorizontal="true" />
+
         </LinearLayout>
+
         <TextView
             android:id="@+id/sample_text"
             android:layout_width="match_parent"
