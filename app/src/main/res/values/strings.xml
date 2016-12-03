@@ -2,7 +2,10 @@
     <string name="app_name">SignApp</string>
 
     <string name="email">Email: </string>
+    <string name="emailHint">Enter email address</string>
     <string name="password">Password: </string>
+    <string name="passwordHint">Enter password</string>
+    <string name="createUserButton">Create New Login</string>
     <string name="loginButton">Login</string>
 
     <string name="title_activity_homepage">Homepage</string>

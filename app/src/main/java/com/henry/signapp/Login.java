@@ -16,13 +16,12 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class Login extends AppCompatActivity {
-    public final static String USER = "com.henry.signapp.USER";
+    public final static String EMAIL = "com.henry.signapp.EMAIL";
     private EditText emailText, passwordText;
-    private Button login;
+    private Button newUser, login;
     private String email, password;
     private FirebaseAuth auth;
-    private FirebaseAuth.AuthStateListener stateListener;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,9 +35,58 @@ public class Login extends AppCompatActivity {
             finish();
         }
 
-        //get user's email & password
+        //user's email & password EditText
         emailText = (EditText) findViewById(R.id.userEmail);
         passwordText = (EditText) findViewById(R.id.userPassword);
+
+        //create a new user button listener
+        newUser = (Button) findViewById(R.id.createUser);
+        newUser.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                email = emailText.getText().toString().trim();
+                password = passwordText.getText().toString().trim();
+
+                //if email or password are empty
+                if ( TextUtils.isEmpty(email) || TextUtils.isEmpty(password) ) {
+                    Toast.makeText(getApplicationContext(), "Email address or password is empty",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                //if email does not contain @
+                if( !email.contains("@") ){
+                    Toast.makeText(getApplicationContext(), "Invalid email address",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                //if password is less than 6 characters
+                if(password.length() < 6){
+                    Toast.makeText(getApplicationContext(), "Password must be longer than 6 characters",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                //create new user
+                auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(Login.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                Toast.makeText(getApplicationContext(), "New user created",
+                                        Toast.LENGTH_LONG).show();
+                                //if creating a new user was unsuccessful
+                                if( !task.isSuccessful() ){
+                                    Toast.makeText(getApplicationContext(), "Error occurred while creating new user",
+                                            Toast.LENGTH_LONG).show();
+                                }
+                                //if creating a new user was successful
+                                else{
+                                    Intent intent = new Intent(Login.this, Homepage.class);
+                                    intent.putExtra(EMAIL, email);
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+            }
+        });
 
 
         //login button listener
@@ -66,7 +114,7 @@ public class Login extends AppCompatActivity {
                         //if login was successful
                         else{
                             Intent intent = new Intent(Login.this, Homepage.class);
-                            intent.putExtra(USER, email);
+                            intent.putExtra(EMAIL, email);
                             startActivity(intent);
                         }
                     }
