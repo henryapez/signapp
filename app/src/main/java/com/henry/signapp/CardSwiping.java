@@ -30,10 +30,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CardSwiping extends AppCompatActivity {
-    private ArrayList<String> testData;
+    private ArrayList<String> gifDeck;
     private SwipeDeck cardStack;
     private SwipeDeckAdapter adapter;
     private Context context = this;
@@ -41,6 +42,8 @@ public class CardSwiping extends AppCompatActivity {
     private Firebase mUserGifsRef;
     //Current User references
     private FirebaseAuth auth;
+    //Firebase database reference for queries
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private String useremail, username;
     float x1,x2;
     float y1, y2;
@@ -56,9 +59,9 @@ public class CardSwiping extends AppCompatActivity {
         useremail = auth.getCurrentUser().getEmail();
         username = useremail.split("@")[0];
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        mUserGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/users/"+username+"/gifs");
         DatabaseReference ref = database.getReference("users/"+username+"/gifs");
-        testData = getIntent().getStringArrayListExtra("userGif_list");
+        gifDeck = getIntent().getStringArrayListExtra("userGif_list");
 
 
 //        ref.addChildEventListener(new ChildEventListener() {
@@ -66,7 +69,7 @@ public class CardSwiping extends AppCompatActivity {
 //            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
 //                //System.out.println("MASTERED: " + Boolean.toString(newGif.mastered));
 //                System.out.println("ID: " + prevChildKey);
-//                testData.add(dataSnapshot.getKey());
+//                gifDeck.add(dataSnapshot.getKey());
 //            }
 //            @Override
 //            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
@@ -86,8 +89,10 @@ public class CardSwiping extends AppCompatActivity {
 
 
 
-        System.out.println("SIZE OF TESTDATA IS " + testData.size());
-        adapter = new SwipeDeckAdapter(testData, this);
+        System.out.println("SIZE OF TESTDATA IS " + gifDeck.size());
+        //Set the Swipe card adapter. Shuffle gifs before sending them to the View
+        Collections.shuffle(gifDeck);
+        adapter = new SwipeDeckAdapter(gifDeck, this);
         if(cardStack != null){
             cardStack.setAdapter(adapter);
         }
@@ -107,14 +112,14 @@ public class CardSwiping extends AppCompatActivity {
 
 
         //example of buttons triggering events on the deck
-        Button btn = (Button) findViewById(R.id.button);
+        Button btn = (Button) findViewById(R.id.knowIt);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cardStack.swipeTopCardLeft(180);
             }
         });
-        Button btn2 = (Button) findViewById(R.id.button2);
+        Button btn2 = (Button) findViewById(R.id.practiceIt);
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,11 +127,11 @@ public class CardSwiping extends AppCompatActivity {
             }
         });
 
-        Button btn3 = (Button) findViewById(R.id.button3);
-        btn3.setOnClickListener(new View.OnClickListener() {
+        Button checkAnswer = (Button) findViewById(R.id.checkAnswer);
+        checkAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                testData.add("a sample string.");
+                gifDeck.add("a sample string.");
                 adapter.notifyDataSetChanged();
             }
         });
@@ -153,12 +158,12 @@ public class CardSwiping extends AppCompatActivity {
                 y2 = touchevent.getY();
                 //if Right swipe when only one card is visible
                 if (x1 < x2) {
-                    cardStack.swipeTopCardRight(180);
+                   // cardStack.swipeTopCardRight(180);
                     Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
                 }
                 //Left swipe when only one card is visible
                 if (x1 > x2) {
-                    cardStack.swipeTopCardLeft(180);
+                  ///  cardStack.swipeTopCardLeft(180);
                     Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
                 }
                 // if UP to Down sweep event on screen
@@ -178,8 +183,10 @@ public class CardSwiping extends AppCompatActivity {
     public class OnSwipeTouchListener implements View.OnTouchListener {
 
         private final GestureDetector gestureDetector;
-        public OnSwipeTouchListener (Context ctx){
+        private String currentGif;
+        public OnSwipeTouchListener (Context ctx, String selectedGif){
             gestureDetector = new GestureDetector(ctx, new GestureListener());
+            currentGif = selectedGif;
         }
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -228,12 +235,19 @@ public class CardSwiping extends AppCompatActivity {
         }
         public void onSwipeRight() {
 
-            Toast.makeText(context, "Right Swipe detected", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Right Swipe detected adding " + currentGif, Toast.LENGTH_LONG).show();
+
+            //Get top card gif and keep it in the deck to view later
+            gifDeck.add(currentGif);
             cardStack.swipeTopCardRight(180);
+            adapter.notifyDataSetChanged();
         }
         public void onSwipeLeft() {
-            Toast.makeText(context, "Left Swipe detected", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
+
+            mUserGifsRef.child(currentGif).child("mastered").setValue(true);
             cardStack.swipeTopCardLeft(180);
+
         }
         public void onSwipeTop() {
         }
@@ -245,12 +259,16 @@ public class CardSwiping extends AppCompatActivity {
         private View vv;
         private List<String> data;
         private Context context;
+        private int position;
 
         public SwipeDeckAdapter(List<String> data, Context context) {
             this.data = data;
             this.context = context;
         }
 
+        public int getPosition(){
+            return position;
+        }
         @Override
         public int getCount() {
             return data.size();
@@ -276,19 +294,19 @@ public class CardSwiping extends AppCompatActivity {
                 // normally use a viewholder
                 v = inflater.inflate(R.layout.test_card2, parent, false);
             }
-
+            this.position = position;
             ImageView imageView = (ImageView) v.findViewById(R.id.offer_image);
             //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
             Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
             TextView textView = (TextView) v.findViewById(R.id.sample_text);
-            TextView masteredText = (TextView) v.findViewById(R.id.left_image);
-            TextView practiceText = (TextView) v.findViewById(R.id.right_image);
+           // TextView masteredText = (TextView) v.findViewById(R.id.left_image);
+            // TextView practiceText = (TextView) v.findViewById(R.id.right_image);
             String item = (String)getItem(position);
-            masteredText.setText("Mastered Sign");
-            practiceText.setText("Keep Practicing");
+            //masteredText.setText("Mastered Sign");
+            //practiceText.setText("Keep Practicing");
             textView.setText(item);
 
-            v.setOnTouchListener(new OnSwipeTouchListener(context) {
+            v.setOnTouchListener(new OnSwipeTouchListener(context, item) {
                 String answer ="";
                 public void onSwipeTop() {
                     answer = "top";
@@ -305,7 +323,7 @@ public class CardSwiping extends AppCompatActivity {
                 }
             });
 
-            imageView.setOnTouchListener(new OnSwipeTouchListener(context) {
+            imageView.setOnTouchListener(new OnSwipeTouchListener(context, item) {
                 String answer ="";
                 public void onSwipeTop() {
                     answer = "top";
