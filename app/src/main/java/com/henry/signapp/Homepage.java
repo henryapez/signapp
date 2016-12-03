@@ -13,11 +13,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.daprlabs.aaron.swipedeck.SwipeDeck;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ public class Homepage extends AppCompatActivity {
     private String[] alphabet = {"A", "B", "C", "D"};
     private ArrayList<String> decksList = new ArrayList<String>(Arrays.asList(decks));
     private ArrayList<String> alphabetList = new ArrayList<String>(Arrays.asList(alphabet));
+    private ArrayList<String> testData = new ArrayList<String>();
 
     private EditText userEmail, userPassord;
     private String useremail, username;
@@ -67,6 +72,35 @@ public class Homepage extends AppCompatActivity {
         welcome.setText("Welcome " + username);
         //Save the user to the database in order to track his activty
         writeNewUser(username, useremail);
+        useremail = auth.getCurrentUser().getEmail();
+        username = useremail.split("@")[0];
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users/"+username+"/gifs");
+//        testData.add("0");
+//        testData.add("1");
+//        testData.add("2");
+//        testData.add("3");
+//        testData.add("4");
+        ref.addChildEventListener(new com.google.firebase.database.ChildEventListener() {
+            @Override
+            public void onChildAdded(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
+                //System.out.println("MASTERED: " + Boolean.toString(newGif.mastered));
+                System.out.println("ID: " + prevChildKey);
+                testData.add(dataSnapshot.getKey());
+            }
+            @Override
+            public void onChildChanged(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
+            }
+            @Override
+            public void onChildRemoved(com.google.firebase.database.DataSnapshot dataSnapshot) {
+            }
+            @Override
+            public void onChildMoved(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
 
         //Display the Categories in the Homepage
@@ -157,7 +191,7 @@ public class Homepage extends AppCompatActivity {
     //practice button listener
     public void swipe(View view){
         Intent practiceIntent = new Intent(this, CardSwiping.class);
-
+        practiceIntent.putStringArrayListExtra("userGif_list", testData);
         startActivity(practiceIntent);
     }
 

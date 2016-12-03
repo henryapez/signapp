@@ -19,6 +19,14 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.daprlabs.aaron.swipedeck.SwipeDeck;
+import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -29,6 +37,11 @@ public class CardSwiping extends AppCompatActivity {
     private SwipeDeck cardStack;
     private SwipeDeckAdapter adapter;
     private Context context = this;
+    //Reference to User's gif Firebase
+    private Firebase mUserGifsRef;
+    //Current User references
+    private FirebaseAuth auth;
+    private String useremail, username;
     float x1,x2;
     float y1, y2;
     private static final String TAG = "CardSwiping";
@@ -38,19 +51,42 @@ public class CardSwiping extends AppCompatActivity {
         setContentView(R.layout.activity_card_swiping);
 
 
+        auth = FirebaseAuth.getInstance();
 
+        useremail = auth.getCurrentUser().getEmail();
+        username = useremail.split("@")[0];
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
-        testData = new ArrayList<>();
-        testData.add("0");
-        testData.add("1");
-        testData.add("2");
-        testData.add("3");
-        testData.add("4");
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("users/"+username+"/gifs");
+        testData = getIntent().getStringArrayListExtra("userGif_list");
+
+
+//        ref.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+//                //System.out.println("MASTERED: " + Boolean.toString(newGif.mastered));
+//                System.out.println("ID: " + prevChildKey);
+//                testData.add(dataSnapshot.getKey());
+//            }
+//            @Override
+//            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
+//            }
+//            @Override
+//            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//            }
+//            @Override
+//            public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
+//            }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//            }
+//        });
 
 
 
 
 
+        System.out.println("SIZE OF TESTDATA IS " + testData.size());
         adapter = new SwipeDeckAdapter(testData, this);
         if(cardStack != null){
             cardStack.setAdapter(adapter);
@@ -243,7 +279,7 @@ public class CardSwiping extends AppCompatActivity {
 
             ImageView imageView = (ImageView) v.findViewById(R.id.offer_image);
             //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
-            Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/all.gif").into(imageView);
+            Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
             TextView textView = (TextView) v.findViewById(R.id.sample_text);
             TextView masteredText = (TextView) v.findViewById(R.id.left_image);
             TextView practiceText = (TextView) v.findViewById(R.id.right_image);
