@@ -2,6 +2,7 @@ package com.henry.signapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import com.firebase.client.Firebase;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;

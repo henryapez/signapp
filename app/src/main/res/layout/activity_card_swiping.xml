@@ -5,7 +5,7 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:id="@+id/swipeLayout"
 android:orientation="vertical"
-    android:weightSum="1">
+    android:weightSum="3">
 
     <com.daprlabs.aaron.swipedeck.SwipeDeck
         android:id="@+id/swipe_deck"

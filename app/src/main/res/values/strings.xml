@@ -7,13 +7,18 @@
     <string name="passwordHint">Enter password</string>
     <string name="createUserButton">Create New Login</string>
     <string name="loginButton">Login</string>
+    <string name="keep_in_deck">Keep in Deck</string>
+    <string name="answer">Answer</string>
+    <string name="know_it">Know it</string>
 
     <string name="title_activity_homepage">Homepage</string>
     <string name="student">Welcome Student</string>
     <string name="totalScore">Total Score: 0 / 100</string>
-    <string name="deckButton">My Deck</string>
+    <string name="allGifsButton">All Signs</string>
+    <string name="myDeckButton">My Deck</string>
     <string name="masteredButton">Mastered Signs</string>
     <string name="practiceButton">Practice</string>
+    <string name="logoutButton">Logout</string>
     <string name="firebase">Firebase</string>
     <string name="swipe">Swipe</string>
 
@@ -23,7 +28,4 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
-    <string name="know_it">Know it</string>
-    <string name="keep_in_deck">Keep in Deck</string>
-    <string name="answer">Answer</string>
 </resources>
