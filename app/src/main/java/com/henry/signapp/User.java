@@ -1,6 +1,8 @@
 package com.henry.signapp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by tom on 12/3/16.
@@ -8,7 +10,7 @@ import java.util.ArrayList;
 
 public class User {
     private String email, username;
-    private ArrayList<SignGif> myDeck;
+    private Map<String, Sign> myDeck;
 
     //constructors
     public User(){
@@ -17,7 +19,7 @@ public class User {
     public User(String email){
         this.email = email;
         username = email.split("@")[0];
-        myDeck = new ArrayList<SignGif>();
+        myDeck = new HashMap<>();
     }
 
     //getters & setters
@@ -27,13 +29,13 @@ public class User {
     public String getUsername(){
         return username;
     }
-    public ArrayList<SignGif> getMyDeck(){
+    public Map<String, Sign> getMyDeck(){
         return myDeck;
     }
-    public void addGif(SignGif gif){
-        myDeck.add(gif);
+    public void addGif(Sign gif){
+        myDeck.put(gif.getUrl(),gif);
     }
-    public void removeGif(SignGif gif){
+    public void removeGif(Sign gif){
         myDeck.remove(gif);
     }
 }

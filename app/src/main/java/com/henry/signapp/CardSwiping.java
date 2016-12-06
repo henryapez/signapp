@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.daprlabs.aaron.swipedeck.SwipeDeck;
-import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -39,9 +38,10 @@ public class CardSwiping extends AppCompatActivity {
     private SwipeDeckAdapter adapter;
     private Context context = this;
     //Reference to User's gif Firebase
-    private Firebase mUserGifsRef;
+    private FirebaseHelper db = FirebaseHelper.getInstance();
     //Current User references
     private FirebaseAuth auth;
+    private DatabaseReference mUserGifsRef;
     //Firebase database reference for queries
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private String useremail, username;
@@ -59,7 +59,7 @@ public class CardSwiping extends AppCompatActivity {
         useremail = auth.getCurrentUser().getEmail();
         username = useremail.split("@")[0];
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
-        mUserGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/users/"+username+"/gifs");
+        mUserGifsRef = db.getRef("users/"+username+"/myDeck");
         DatabaseReference ref = database.getReference("users/"+username+"/gifs");
         gifDeck = getIntent().getStringArrayListExtra("userGif_list");
 

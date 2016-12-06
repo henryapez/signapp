@@ -18,10 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daprlabs.aaron.swipedeck.SwipeDeck;
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,100 +31,94 @@ import java.util.Arrays;
 import java.util.Map;
 
 public class Homepage extends AppCompatActivity {
-    private FirebaseAuth auth;
+
     FirebaseDatabase myDB;
     //ListView displaying list in Homepage
     private ArrayList<String> categories = new ArrayList<String>();
     private ListView categoriesListView;
 
 
+
     //ListView displaying list in Homepage
-    private ArrayList<String> deckList = new ArrayList<String>();
-    private ListView deckListView;
-    private ArrayAdapter deckAdapter;
+    private ArrayList<String> categoriesList = new ArrayList<String>();
+    //private ListView deckListView;
+    private ArrayAdapter categoriesAdapter;
     private TextView listmessage;
 
-    private ArrayList<String> testData = new ArrayList<String>();
+    //Firebase Sign database helper
+    private FirebaseHelper db = FirebaseHelper.getInstance();
+
+    private ArrayList<String> userGifs = new ArrayList<String>();
 
     //private EditText userEmail, userPassword;
     private String userEmail, useremail, username, mRefURL;;
 
+   // private User currentUser = db.getUser();
+    private String currentUser = db.getUser();
     float x1,x2, y1, y2;
 
-    //Root Firebase reference
-    private Firebase mRootRef;      //Root Firebase reference
-    private final String ROOT_URL = "https://signapp-aab9e.firebaseio.com/";
 
-    //Gifs table reference
-    private Firebase mGifsRef, mCatsRef, mUsersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-        Firebase.setAndroidContext(this);
-        mUsersRef = new Firebase("https://signapp-aab9e.firebaseio.com/users");
-        mGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/gifs");
-        mCatsRef = new Firebase("https://signapp-aab9e.firebaseio.com/categories");
-        mRootRef = new Firebase(ROOT_URL);
+
+//        mUsersRef = new Firebase("https://signapp-aab9e.firebaseio.com/users");
+//        mGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/gifs");
+//        mCatsRef = new Firebase("https://signapp-aab9e.firebaseio.com/categories");
+//        mRootRef = new Firebase(ROOT_URL);
 
 
+        /*
+            Set Welcome text
+         */
 
-        //User authentication
-        auth = FirebaseAuth.getInstance();
-        useremail = auth.getCurrentUser().getEmail();
-        username = useremail.split("@")[0];
         TextView welcome = (TextView) findViewById(R.id.welcomeText);
-        welcome.setText("Welcome " + username);
+        welcome.setText("Welcome " + currentUser);
 
-
-        //Save the user to the database in order to track his activty
-        //writeNewUser(username, useremail);
-        writeNewUser(useremail);
 
         listmessage = (TextView) findViewById(R.id.listTitle);
-        listmessage.setText("All signs categories");
-//
-//
-        //Display the Categories in the Homepage
-        deckListView = (ListView) findViewById(R.id.deckList);
-        deckAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
-                android.R.id.text1, deckList);
-        deckListView.setAdapter(deckAdapter);
-        mRefURL = ROOT_URL + "categories";
-        showList(mRefURL, 0);
+        listmessage.setText("Sign Categories");
 
-        deckListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id){
-                                listmessage.setText("All " + deckList.get(position) + " category signs");
-                                String newURL = mRefURL + "/" + deckList.get(position);
-                                showList(newURL, 1);
-                                addToUserDB();
-                            }
-                    });
-       // storeGifsInDB();
+        /*
+            Display the Categories in the Homepage
+         */
+        categoriesListView = (ListView) findViewById(R.id.deckList);
+        categoriesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+                android.R.id.text1, categoriesList);
+        categoriesListView.setAdapter(categoriesAdapter);
+        getSignList(db.getRef("categories"),0);
 
+        categoriesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                listmessage.setText("All " + categoriesList.get(position) + " category signs");
+                Toast.makeText(getApplicationContext(), categoriesList.get(position), Toast.LENGTH_SHORT).show();
+                getSignList(db.getRef("categories/" + categoriesList.get(position)), 1);
+                setSignListener();
+            }
+        });
 
         //Get user's gifs from the db
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("users/"+username+"/gifs");
 
-        ref.addChildEventListener(new com.google.firebase.database.ChildEventListener() {
+        DatabaseReference ref = db.getRef("users/"+username+"/gifs");
+
+        ref.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onChildAdded(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
-                //System.out.println("MASTERED: " + Boolean.toString(newGif.mastered));
-                System.out.println("ID: " + prevChildKey);
-                testData.add(dataSnapshot.getKey());
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                userGifs.add(dataSnapshot.getKey());
             }
             @Override
-            public void onChildChanged(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
+            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
             }
             @Override
-            public void onChildRemoved(com.google.firebase.database.DataSnapshot dataSnapshot) {
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                userGifs.remove(dataSnapshot.getKey());
+                Toast.makeText(getApplicationContext(), "REMOVED " + dataSnapshot.getKey(), Toast.LENGTH_SHORT).show();
             }
             @Override
-            public void onChildMoved(com.google.firebase.database.DataSnapshot dataSnapshot, String prevChildKey) {
+            public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -134,79 +126,81 @@ public class Homepage extends AppCompatActivity {
         });
 
 
-    }
-
-    //Show Categories list on Homepage
-    //type == 0 show categories
-    //type == 1 show subcategories
-    public void showList(String url, final int type){
-        deckList.clear();
-        Firebase mRef = new Firebase(url);
-        mRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //If data is added to categories table, add it to global categories and update ListView
-                categories.add(dataSnapshot.getKey());
-                deckAdapter.notifyDataSetChanged();
-                //Show Categories
-                if(type == 0) {
-                    deckList.add(dataSnapshot.getKey());
-                    deckAdapter.notifyDataSetChanged();
-                }
-                //Show Subcategories
-                if(type == 1){
-                    String item = dataSnapshot.getValue().toString();
-                    item = item.substring(7, item.length()-1);
-                    deckList.add(item);
-                    deckAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-            }
-        });
 
 
     }
 
+        //Show Categories list on Homepage
+        //type == 0 show categories
+        //type == 1 show subcategories
+        public void getSignList( DatabaseReference ref, final int type){
+            categoriesList.clear();
+
+            ref.addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    //If data is added to categories table, add it to global categories and update ListView
+                    categories.add(dataSnapshot.getKey());
+                    categoriesAdapter.notifyDataSetChanged();
+                    //Show Categories
+                    if(type == 0) {
+                        categoriesList.add(dataSnapshot.getKey());
+                        categoriesAdapter.notifyDataSetChanged();
+                    }
+                    //Show Subcategories
+                    if(type == 1){
+                        Sign item = dataSnapshot.getValue(Sign.class);
+                        //item = item.substring(7, item.length()-1);
+                        categoriesList.add(item.getTitle());
+                        categoriesAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                @Override
+                public void onCancelled(DatabaseError firebaseError) {
+                }
+            });
 
 
-    public void addToUserDB(){
-        deckListView = (ListView) findViewById(R.id.deckList);
-        deckListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+
+        }
+
+
+
+
+
+
+
+
+    public void setSignListener(){
+        categoriesListView = (ListView) findViewById(R.id.deckList);
+        categoriesListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
                 TextView listItem = (TextView) view.findViewById(android.R.id.text1);
-
+                Object signClicked = parent.getItemAtPosition(position);
                 ColorDrawable listViewColor = (ColorDrawable) listItem.getBackground();
                 int colorId = 0;
-                if(listViewColor == null){
+                if(listViewColor == null || listViewColor.getColor() == 0 ){
                     listItem.setBackgroundColor(Color.GREEN);
-                    /*
-
-                    Add gifs from my user
-
-                     */
+                    Toast.makeText(getApplicationContext(), signClicked.toString(), Toast.LENGTH_SHORT).show();
+                    //db.addUserSign(signClicked.toString());
                 }else {
                    listItem.setBackgroundColor(0x00000000);
-                    /*
-
-                    Remove gif from user mygifs
-
-                     */
+                    //db.deleteUserSign(signClicked.getUrl());
                 }
 
 
@@ -221,12 +215,12 @@ public class Homepage extends AppCompatActivity {
         });
     }
 
+
     //all gifs button listener shows all available gifs in the list view
        public void allGifsClicked(View view){
                 listmessage = (TextView) findViewById(R.id.listTitle);
                 listmessage.setText("All Categories");
-                mRefURL = ROOT_URL + "categories";
-                showList(mRefURL, 0);
+                getSignList(db.getRef("categories"),0);
     }
 
 
@@ -234,7 +228,7 @@ public class Homepage extends AppCompatActivity {
     //practice button listener
     public void swipe(View view){
         Intent practiceIntent = new Intent(this, CardSwiping.class);
-        practiceIntent.putStringArrayListExtra("userGif_list", testData);
+        practiceIntent.putStringArrayListExtra("userGif_list", userGifs);
         startActivity(practiceIntent);
     }
 
@@ -247,28 +241,14 @@ public class Homepage extends AppCompatActivity {
 
     //logout button listener
     public void logout(View view){
-        auth.signOut();
+        FirebaseAuth.getInstance().signOut();
         finish();
     }
 
 
-    //Save the user to the database in order to track his activity
-    private void writeNewUser(String username, String email) {
-        mUsersRef.child(username).child("username").setValue(username);
-        mUsersRef.child(username).child("email").setValue(email);
-    }
 
-    //Save the user to the database in order to track his activity
-//    private void writeNewUser(String username, String email) {
-    public void writeNewUser(String email){
-        User newUser = new User(email);
-        newUser.addGif(new SignGif("Animals", "bear", "Bear") );
-        newUser.addGif(new SignGif("Animals", "cat", "Cat") );
-        //Have key be the username of the user (dont user push to generate key)
-        mUsersRef.child(newUser.getUsername()).setValue(newUser);
-       // mUsersRef.push().setValue(newUser);
 
-    }
+
 
     public void myDeckClicked(View v){
         //TODO query the user's decks

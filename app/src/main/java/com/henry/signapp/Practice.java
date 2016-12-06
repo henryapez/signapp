@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.daprlabs.aaron.swipedeck.SwipeDeck;
 import com.bumptech.glide.Glide;
-import com.firebase.client.Firebase;
+
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -29,8 +29,7 @@ import java.util.regex.Pattern;
 
 public class Practice extends AppCompatActivity {
     private Button firebaseButton;
-    private Firebase mRef;
-    private Firebase mGifsRef;
+    private FirebaseHelper db = FirebaseHelper.getInstance();
     private GestureDetector gestureDetector;
     private ImageView v;
     @Override
