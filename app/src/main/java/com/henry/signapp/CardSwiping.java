@@ -1,6 +1,7 @@
 package com.henry.signapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -33,17 +34,19 @@ import java.util.Collections;
 import java.util.List;
 
 public class CardSwiping extends AppCompatActivity {
-    private ArrayList<String> gifDeck;
+
+    ArrayList<String> signUrls;
+    private ArrayList<Sign> mySigns;
     private SwipeDeck cardStack;
     private SwipeDeckAdapter adapter;
     private Context context = this;
-    //Reference to User's gif Firebase
+    //Reference to database Helper
     private FirebaseHelper db = FirebaseHelper.getInstance();
     //Current User references
     private FirebaseAuth auth;
-    private DatabaseReference mUserGifsRef;
+
     //Firebase database reference for queries
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+
     private String useremail, username;
     float x1,x2;
     float y1, y2;
@@ -53,46 +56,25 @@ public class CardSwiping extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_swiping);
 
+        //Get the user's local deck stored in FirebaseHelper and store the urls to read
+        signUrls = new ArrayList<String>(db.getUserSigns().keySet());
+
 
         auth = FirebaseAuth.getInstance();
-
         useremail = auth.getCurrentUser().getEmail();
         username = useremail.split("@")[0];
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
-        mUserGifsRef = db.getRef("users/"+username+"/myDeck");
-        DatabaseReference ref = database.getReference("users/"+username+"/gifs");
-        gifDeck = getIntent().getStringArrayListExtra("userGif_list");
-
-
-//        ref.addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-//                //System.out.println("MASTERED: " + Boolean.toString(newGif.mastered));
-//                System.out.println("ID: " + prevChildKey);
-//                gifDeck.add(dataSnapshot.getKey());
-//            }
-//            @Override
-//            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
-//            }
-//            @Override
-//            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//            }
-//            @Override
-//            public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//            }
-//        });
 
 
 
 
 
-        System.out.println("SIZE OF TESTDATA IS " + gifDeck.size());
+
+
+        System.out.println("size of usersigns is " + Integer.toString(signUrls.size()));
         //Set the Swipe card adapter. Shuffle gifs before sending them to the View
-        Collections.shuffle(gifDeck);
-        adapter = new SwipeDeckAdapter(gifDeck, this);
+        Collections.shuffle(signUrls);
+        adapter = new SwipeDeckAdapter(signUrls, this);
         if(cardStack != null){
             cardStack.setAdapter(adapter);
         }
@@ -131,7 +113,7 @@ public class CardSwiping extends AppCompatActivity {
         checkAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                gifDeck.add("a sample string.");
+                signUrls.add("a sample string.");
                 adapter.notifyDataSetChanged();
             }
         });
@@ -238,14 +220,14 @@ public class CardSwiping extends AppCompatActivity {
             Toast.makeText(context, "Right Swipe detected adding " + currentGif, Toast.LENGTH_LONG).show();
 
             //Get top card gif and keep it in the deck to view later
-            gifDeck.add(currentGif);
+            signUrls.add(currentGif);
             cardStack.swipeTopCardRight(180);
             adapter.notifyDataSetChanged();
         }
         public void onSwipeLeft() {
             Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
 
-            mUserGifsRef.child(currentGif).child("mastered").setValue(true);
+            db.getRef("users").child(currentGif).child("mastered").setValue(true);
             cardStack.swipeTopCardLeft(180);
 
         }

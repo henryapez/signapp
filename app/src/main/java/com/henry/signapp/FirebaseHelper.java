@@ -19,6 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -28,27 +29,33 @@ import java.util.HashMap;
 public class FirebaseHelper {
     private static FirebaseHelper instance = null;
     FirebaseDatabase db = FirebaseDatabase.getInstance();
-    ArrayList<String> gifList = new ArrayList<>();
+
 
     //private User user;
-    private String user;
+    private FirebaseUser FBuser;
+    private User currentuser;
+
+
 
     //ListView displaying list in Homepage
     private ArrayList<String> deckList = new ArrayList<String>();
     private ListView deckListView;
     private ArrayAdapter deckAdapter;
 
+    private HashMap<String, Sign> userSigns = new HashMap<String, Sign>();
+
     //Root Firebase reference
     private final String ROOT_URL = "https://signapp-aab9e.firebaseio.com/";
     private DatabaseReference mUsersRef = db.getReference("users");
+    private DatabaseReference userRef;
     private DatabaseReference mCatsRef = db.getReference("categories");
-    private DatabaseReference mGifsRef = db.getReference("gifs");
     private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(ROOT_URL);
 
 
     //constructors
     public FirebaseHelper() {
         db = FirebaseDatabase.getInstance();
+        FBuser = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     public FirebaseHelper(FirebaseDatabase myDB) {
@@ -69,182 +76,108 @@ public class FirebaseHelper {
     }
 
     /*
-        GET REFS
+        GET REFS HELPER
+        type = the reference string you want in the root url ex. type = "users" to get the users reference
      */
     public DatabaseReference getRef(String type) {
         return db.getReference(type);
 
     }
 
-
     /*
     ADD NEW USER
+        User has just signed up
      */
-    public void addNewUser(User newUser) {
-        FirebaseUser FBuser = FirebaseAuth.getInstance().getCurrentUser();
-//        this.user = newUser;
-        mUsersRef.child(FBuser.getUid()).setValue(this.user);
-        user=newUser.getUsername();
-
+    public void addNewUser(String email) {
+        FBuser = FirebaseAuth.getInstance().getCurrentUser();
+        if(FBuser.getEmail().equals(email)){
+            User newUser = new User(email);
+            mUsersRef.child(newUser.getUsername()).setValue(newUser);
+            currentuser = newUser;
+            userRef = db.getReference("users"+getUsername());
+        }
     }
 
     /*
         SIGN IN
     */
     public void signIn() {
-        FirebaseUser FBuser = FirebaseAuth.getInstance().getCurrentUser();
-//        ValueEventListener postListener = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                User getUser = dataSnapshot.getValue(User.class);
-//                user = getUser;
-//                Log.w("GOTUSER", "USER IS "+ user);
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                Log.w("SIGNIN", "getUser:onCancelled", databaseError.toException());
-//            }
-//        };
-        //mUsersRef.child(FBuser.getEmail().split("@")[0]).addValueEventListener(postListener);
-        user = FBuser.getEmail().split("@")[0];
+        FBuser = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference mref = getRef("users/"+FBuser.getEmail().split("@")[0]);
+        // Attach a listener to read the data at our posts reference
+        mref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = (User) dataSnapshot.getValue(User.class);
+                currentuser = user;
+                userRef = db.getReference("users"+getUsername());
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("The read failed: " + databaseError.getCode());
+            }
+        });
     }
 
 
     /*
     DELETE USER
      */
-    public void deleteUser(String email) {
-        /*
-        TODO
-         */
+    public void deleteUser() {
+       mUsersRef.child(getUsername()).setValue(null);
     }
 
     /*
-    GET USER
+    GET USERNAME
      */
-    public String getUser() {
-        FirebaseUser FBuser = FirebaseAuth.getInstance().getCurrentUser();
-        user = FBuser.getEmail().split("@")[0];
-        return user;
+    public String getUsername() {
+        if(FBuser != null)
+             return FBuser.getEmail().split("@")[0];
+        else
+            return null;
     }
 
 
+
+
+
+
     /*
-    ADD SIGN TO USER DECK
+    ADD SIGN TO USER MyDeck IN FIREBASE
+        Add Sign to the User's database deck
      */
     public void addUserSign(Sign sign) {
-        /*
-        TODO should get username and gif id for argument and set value on a new entry for their mygifs
-         */
-        if (sign != null)
-            mUsersRef.child("gifList").push().setValue(sign);
-    }
+       mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).setValue(sign);
 
-    /*
-    DELETE SIGN FROM USER DECK
-     */
-    public void deleteUserSign(String signUrl) {
-        getRef(mUsersRef+"/"+user+"myDeck").child(signUrl).setValue(null);
+
 
     }
 
     /*
-    DOES USER HAVE SIGN
+    DELETE SIGN FROM USER DECK IN FIREBASE AND LOCALLY
+    Remove a sign from the user's database and also his current local deck
      */
-    public boolean hasSign(String id) {
+    public void deleteUserSign(String id) {
+        mUsersRef.child(getUsername()).child("myDeck").child(id).setValue(null);
+        userSigns.remove(id);
 
-        return false;
     }
 
     /*
-    GET USER SIGNS
+        Set The user's current global signs
      */
-    public boolean getUserSigns(String id) {
-
-        return false;
+    public void setUserSign(String id, Sign sign){
+        this.userSigns.put(id, sign);
     }
-
-
-    //Get ALL gifs from the database
-    //type == 0 return category
-    //type == 1 return url,
-    //type == 2 return title,
-    //type == 3 return inDeck, type == 4 return mastered;
-//    public ArrayList<String> getGifs(final int type){
-//        dbRef.addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//                getGifInfo(dataSnapshot, type);
-//            }
-//
-//            @Override
-//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//                getGifInfo(dataSnapshot, type);
-//            }
-//
-//            @Override
-//            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//        return gifList;
-//    }
-//
-//    public void getGifInfo(DataSnapshot dataSnapshot, int type){
-//        gifList.clear();
-//
-//        for( DataSnapshot ds : dataSnapshot.getChildren() ){
-//            String value = "";
-//            boolean bolval=false;
-//            switch (type){
-//                case 0:
-//                    value = ds.getValue(Sign.class).getCategory();
-//                    break;
-//                case 1:
-//                    value = ds.getValue(Sign.class).getUrl();
-//                    break;
-//                case 2:
-//                    value = ds.getValue(Sign.class).getTitle();
-//                    break;
-//                case 3:
-//                    bolval = ds.getValue(Sign.class).getInDeck();
-//                    break;
-//                case 4:
-//                    bolval = ds.getValue(Sign.class).getMastered();
-//                    break;
-//            }
-//            if( type == 0 && !gifList.contains(value) ){
-//                gifList.add(value);
-//            }
-//            if(type != 0){
-//                gifList.add(value);
-//            }
-//        }
-//  }
-
-
-
 
     /*
-    ADD CATEGORY
+        Get User Signs List
      */
-    public void addCategory(String id){
-   //     Category newCat = new Category(id);
-//        String key = mCatsRef.push().getKey();
-//        newCat.setKey(key);
-        mCatsRef.setValue(id);
+    public HashMap<String ,Sign> getUserSigns(){
+        return userSigns;
     }
+
+
 
     /*
     DELETE CATEGORY
@@ -253,34 +186,23 @@ public class FirebaseHelper {
         mCatsRef.child(id).setValue(null);
     }
 
-    /*
-    ADD GIF
-     */
-    public void addGif(String id){
-        mGifsRef.child(id).setValue(Character.toUpperCase(id.charAt(0)) + id.substring(1));
-    }
+
 
     /*
-    DELETE GIF
-     */
-    public void deleteGif(String id){
-        mGifsRef.child(id).setValue(null);
-    }
-
-    /*
-   ADD CATEGORY SIGN
+   ADD SIGN TO A CATEGORY
+        Add a gif to a Category
     */
     public void addCategorySign(String category, String id){
-        /*
-        TODO
-         */
+       /*
+
+        */
     }
 
     /*
-    DELETE CATEGORY SIGN
+    DELETE SIGN IN A CATEGORY
      */
     public void deleteCategorySign(String category, String id){
-
+        mCatsRef.child(category).child(id).setValue(null);
     }
 
 

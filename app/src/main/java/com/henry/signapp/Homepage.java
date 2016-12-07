@@ -32,30 +32,26 @@ import java.util.Map;
 
 public class Homepage extends AppCompatActivity {
 
-    FirebaseDatabase myDB;
+
     //ListView displaying list in Homepage
-    private ArrayList<String> categories = new ArrayList<String>();
     private ListView categoriesListView;
-
-
-
-    //ListView displaying list in Homepage
-    private ArrayList<String> categoriesList = new ArrayList<String>();
-    //private ListView deckListView;
     private ArrayAdapter categoriesAdapter;
+    //List containing categories in the Listview
+    private ArrayList<String> categoriesList = new ArrayList<String>();
+
+    //Need to have Sign objects in correct index so when user clicks sign in view,
+    // Sign object is obtained
+    private ArrayList<Sign> signList = new ArrayList<Sign>();
+
+
+    //Header Label
     private TextView listmessage;
 
-    //Firebase Sign database helper
+    /*
+        MAIN FirebaseHelper instance
+        Use to obtain references, current user signs, add/remove user signs from user deck, etc.
+     */
     private FirebaseHelper db = FirebaseHelper.getInstance();
-
-    private ArrayList<String> userGifs = new ArrayList<String>();
-
-    //private EditText userEmail, userPassword;
-    private String userEmail, useremail, username, mRefURL;;
-
-   // private User currentUser = db.getUser();
-    private String currentUser = db.getUser();
-    float x1,x2, y1, y2;
 
 
 
@@ -64,25 +60,23 @@ public class Homepage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
-//        mUsersRef = new Firebase("https://signapp-aab9e.firebaseio.com/users");
-//        mGifsRef = new Firebase("https://signapp-aab9e.firebaseio.com/gifs");
-//        mCatsRef = new Firebase("https://signapp-aab9e.firebaseio.com/categories");
-//        mRootRef = new Firebase(ROOT_URL);
-
 
         /*
             Set Welcome text
+            TODO: Include in the CREATE USER section of the login a request for User name and last name
+            User should be addressed by their name here, not their ID (username)
          */
 
         TextView welcome = (TextView) findViewById(R.id.welcomeText);
-        welcome.setText("Welcome " + currentUser);
-
+        welcome.setText("Welcome " + db.getUsername());
 
         listmessage = (TextView) findViewById(R.id.listTitle);
         listmessage.setText("Sign Categories");
 
         /*
-            Display the Categories in the Homepage
+
+        Display the Categories in the Homepage
+
          */
         categoriesListView = (ListView) findViewById(R.id.deckList);
         categoriesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
@@ -94,28 +88,42 @@ public class Homepage extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 listmessage.setText("All " + categoriesList.get(position) + " category signs");
-                Toast.makeText(getApplicationContext(), categoriesList.get(position), Toast.LENGTH_SHORT).show();
                 getSignList(db.getRef("categories/" + categoriesList.get(position)), 1);
                 setSignListener();
             }
         });
 
-        //Get user's gifs from the db
 
-        DatabaseReference ref = db.getRef("users/"+username+"/gifs");
 
+
+        /*
+
+        GET USER SIGNS FROM THE DATABASE
+        Get the signs and store them globally in the FirebaseHelper
+
+         */
+        DatabaseReference ref = db.getRef("users/"+db.getUsername()+"/myDeck");
+        Toast.makeText(getApplicationContext(), "users/"+db.getUsername()+"/myDeck", Toast.LENGTH_SHORT).show();
         ref.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                userGifs.add(dataSnapshot.getKey());
+                Sign sign = (Sign) dataSnapshot.getValue(Sign.class);
+                db.setUserSign(sign.getUrl(), sign);
             }
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
             }
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                userGifs.remove(dataSnapshot.getKey());
-                Toast.makeText(getApplicationContext(), "REMOVED " + dataSnapshot.getKey(), Toast.LENGTH_SHORT).show();
+                /*
+                TODO: Currently no way for user to remove gifs as the ListView does not
+                differentiate between signs currently in the deck and once that are not
+                 */
+
+                Sign sign = dataSnapshot.getValue(Sign.class);
+                Toast.makeText(getApplicationContext(), "REMOVED " + sign.getUrl(), Toast.LENGTH_SHORT).show();
+                db.deleteUserSign(sign.getUrl());
+
             }
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
@@ -130,27 +138,33 @@ public class Homepage extends AppCompatActivity {
 
     }
 
-        //Show Categories list on Homepage
-        //type == 0 show categories
-        //type == 1 show subcategories
+        /*
+
+        SHOW CATGORIES LIST IN THE HOMEPAGE
+        type == 0 show categories
+        type == 1 show subcategories
+
+         */
+
         public void getSignList( DatabaseReference ref, final int type){
             categoriesList.clear();
+            signList.clear();
 
             ref.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
                     //If data is added to categories table, add it to global categories and update ListView
-                    categories.add(dataSnapshot.getKey());
-                    categoriesAdapter.notifyDataSetChanged();
                     //Show Categories
                     if(type == 0) {
                         categoriesList.add(dataSnapshot.getKey());
                         categoriesAdapter.notifyDataSetChanged();
                     }
+                    //If data is added to a subcategory table, add it to signList and update ListView
                     //Show Subcategories
                     if(type == 1){
                         Sign item = dataSnapshot.getValue(Sign.class);
-                        //item = item.substring(7, item.length()-1);
+                        signList.add(item);
                         categoriesList.add(item.getTitle());
                         categoriesAdapter.notifyDataSetChanged();
                     }
@@ -173,9 +187,6 @@ public class Homepage extends AppCompatActivity {
                 }
             });
 
-
-
-
         }
 
 
@@ -183,7 +194,21 @@ public class Homepage extends AppCompatActivity {
 
 
 
+    /*
+        USER SELECTS SIGNS TO ADD TO HIS DECK
+        Display available signs to follow
 
+        TODO:
+        1. Display only the signs in each category that the user is not following, so signs being
+        follows are in green and thus able to be removed. Currently, signs can only be added bc
+        listview does not label signs in the deck as currently in the deck
+        2. Currenlty, if I follow a sign (say the first one) scroll down and you will
+        notice that another sign also gets highlighted in green but does not get added to the
+        database, it shouldnt. But it should not turn green as well.
+        3. When the Categories Listview is visible
+
+
+     */
 
     public void setSignListener(){
         categoriesListView = (ListView) findViewById(R.id.deckList);
@@ -194,23 +219,16 @@ public class Homepage extends AppCompatActivity {
                 Object signClicked = parent.getItemAtPosition(position);
                 ColorDrawable listViewColor = (ColorDrawable) listItem.getBackground();
                 int colorId = 0;
+                //If the color is null (no background color) or 0 (was previously unfollowed)
                 if(listViewColor == null || listViewColor.getColor() == 0 ){
                     listItem.setBackgroundColor(Color.GREEN);
-                    Toast.makeText(getApplicationContext(), signClicked.toString(), Toast.LENGTH_SHORT).show();
-                    //db.addUserSign(signClicked.toString());
+                    //User wants to follow this sign, add to deck in db and local deck
+                    db.addUserSign(signList.get(position));
                 }else {
+                    //User wants to remove sign from his deck
                    listItem.setBackgroundColor(0x00000000);
-                    //db.deleteUserSign(signClicked.getUrl());
+                    db.deleteUserSign(signList.get(position).getUrl());
                 }
-
-
-
-
-                /*
-
-                ADD TO FIREBASE WHEN GIF IS CLICKED
-
-                 */
             }
         });
     }
@@ -225,17 +243,11 @@ public class Homepage extends AppCompatActivity {
 
 
 
-    //practice button listener
-    public void swipe(View view){
-        Intent practiceIntent = new Intent(this, CardSwiping.class);
-        practiceIntent.putStringArrayListExtra("userGif_list", userGifs);
-        startActivity(practiceIntent);
-    }
+
 
     //practice button listener
     public void practiceClicked(View view){
-        Intent practiceIntent = new Intent(this, Practice.class);
-
+        Intent practiceIntent = new Intent(this, CardSwiping.class);
         startActivity(practiceIntent);
     }
 

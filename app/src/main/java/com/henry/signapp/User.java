@@ -9,6 +9,7 @@ import java.util.Map;
  */
 
 public class User {
+
     private String email, username;
     private Map<String, Sign> myDeck;
 
@@ -32,8 +33,8 @@ public class User {
     public Map<String, Sign> getMyDeck(){
         return myDeck;
     }
-    public void addGif(Sign gif){
-        myDeck.put(gif.getUrl(),gif);
+    public void addGif(String id, Sign sign){
+        myDeck.put(id, sign);
     }
     public void removeGif(Sign gif){
         myDeck.remove(gif);

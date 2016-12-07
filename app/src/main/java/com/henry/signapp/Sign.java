@@ -7,6 +7,8 @@ package com.henry.signapp;
 public class Sign {
     private String url, title;
     private int followersCount,mastersCount;
+    //Only gets updated when a Sign object is in a user deck
+    private boolean mastered;
 
 
     //constructors
@@ -18,6 +20,8 @@ public class Sign {
         this.title = title;
         followersCount=0;
         mastersCount=0;
+        mastered=false;
+
     }
 
     //getters & setter methods for SignGif
@@ -34,6 +38,12 @@ public class Sign {
     }
     public int getMastersCount(){
         return mastersCount;
+    }
+    public void setFollowers(int count){
+        followersCount = count;
+    }
+    public void setMastersCount(int count){
+        mastersCount = count;
     }
 
 
