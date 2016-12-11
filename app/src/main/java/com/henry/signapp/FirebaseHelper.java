@@ -42,7 +42,7 @@ public class FirebaseHelper {
     private ListView deckListView;
     private ArrayAdapter deckAdapter;
 
-    private HashMap<String, Sign> userSigns = new HashMap<String, Sign>();
+    private HashMap<String, UserSign> userSigns = new HashMap<String, UserSign>();
 
     //Root Firebase reference
     private final String ROOT_URL = "https://signapp-aab9e.firebaseio.com/";
@@ -139,20 +139,27 @@ public class FirebaseHelper {
 
 
 
+    /*
+        ADD SIGN TO USER MyDeck IN FIREBASE
+            Add Sign to the User's database deck
+         */
+    public void addUserSign(String category, String url, String title){
+        UserSign newSign = new UserSign(category, url, title);
+        mUsersRef.child(getUsername()).child("myDeck").child(url).setValue(newSign);
 
+
+        userSigns.put(url, newSign);
+    }
 
 
     /*
     ADD SIGN TO USER MyDeck IN FIREBASE
         Add Sign to the User's database deck
      */
-    public void addUserSign(Sign sign, String clickedCategry) {
-       mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).setValue(sign);
-        mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).child("category").setValue(clickedCategry);
-
-
-
-    }
+//    public void addUserSign(Sign sign, String clickedCategry) {
+//       mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).setValue(sign);
+//        mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).child("category").setValue(clickedCategry);
+//    }
 
     /*
     DELETE SIGN FROM USER DECK IN FIREBASE AND LOCALLY
@@ -167,8 +174,18 @@ public class FirebaseHelper {
     /*
         Set The user's current global signs
      */
-    public void setUserSign(String id, Sign sign){
-        this.userSigns.put(id, sign);
+    public void setUserSign(String category, String url, String title){
+        UserSign newSign = new UserSign(category, url, title);
+        this.userSigns.put(newSign.getUrl(), newSign);
+        System.out.println("USERSIGNS HAS BEEN SET USERSIGNS HASHMAP IS  " + userSigns.size());
+    }
+
+    /*
+      Set The user's current global signs
+   */
+    public void removeUserSign(String id){
+        this.userSigns.remove(id);
+        System.out.println("USERSIGNS HAS BEEN REMOVED USERSIGNS HASHMAP IS  " + userSigns.size());
     }
 
     /*
@@ -181,14 +198,14 @@ public class FirebaseHelper {
     /*
        Get User Signs HashMap
     */
-    public HashMap<String ,Sign> getUserSigns(){
+    public HashMap<String ,UserSign> getUserSigns(){
         return userSigns;
     }
 
     /*
         Get User Signs HashMap
      */
-    public Sign getUserSign(String id){
+    public UserSign getUserSign(String id){
         return userSigns.get(id);
     }
 

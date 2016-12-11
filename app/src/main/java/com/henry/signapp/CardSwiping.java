@@ -264,7 +264,7 @@ public class CardSwiping extends AppCompatActivity {
             View currentView = (View) findViewById(R.id.swipeLayout);
             adapter.setOptions(currentView);
             //Set Swiped sign as maastered int he user's deck
-            db.getRef("users").child(currentGif).child("mastered").setValue(true);
+            db.getRef("users").child(db.getUsername()).child("myDeck").child(currentGif).child("mastered").setValue(true);
             cardStack.swipeTopCardLeft(180);
 
         }
@@ -298,31 +298,7 @@ public class CardSwiping extends AppCompatActivity {
             return position;
         }
 
-        /*
-            When a left or right swipe occur, signOnTop and SignOnTopPosition are increamented
-            to the next View (Sign Card) in the deck
 
-            Clear the leaving sign answer so that it wont show in the future
-         */
-//        public String updateSignOnTop(){
-//            if(topAnswerView != null)
-//                topAnswerView.setText("");
-//            signOnTop = (Sign) db.getUserSign(data.get(++signOnTopPosition));
-//            return data.get(signOnTopPosition);
-//        }
-
-        /*
-            When Answer button is clicked, sample_text in the view card on top is updated to the answer
-         */
-//        public void setAnswerText(){
-//            if(signOnTop == null)
-//                signOnTop = (Sign) db.getUserSign(data.get(signOnTopPosition));
-//            Log.i("Position of sign " +signOnTop.getTitle()+ " is ", Integer.toString(signOnTopPosition));
-//            topAnswerView = (TextView) viewHolder.get(signOnTopPosition).findViewById(R.id.sample_text);
-//            topAnswerView.setText(signOnTop.getTitle());
-//            adapter.notifyDataSetChanged();
-//            Log.i("On TOP sign text  " +topAnswerView.getText()+"  ", Integer.toString(signOnTopPosition));
-//        }
 
         public void setSignOnTopPosition(){
             signOnTopPosition++;
@@ -365,7 +341,7 @@ public class CardSwiping extends AppCompatActivity {
                 //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
                 Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
                // viewHolder.add(v);
-            if(initialOptions) {
+            if(initialOptions && getCount()>0) {
                 View parentView = (View) parent.getParent();
                 setOptions(parentView);
                 initialOptions=false;
@@ -418,8 +394,18 @@ public class CardSwiping extends AppCompatActivity {
         }
 
         public void setOptions(final View parentView){
-            //Get all of this signs cateogry gifs and get three random signs for options
-            System.out.println("THE URL categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
+            if(options.size()>0)
+                options.clear();
+            //Get all of this signs category gifs and get three random signs for options
+            System.out.println("SignonTopPosition is  " + adapter.getSignOnTopPosition());
+            System.out.println("UserSigns size in helper is  " + db.getUserSigns().size());
+            System.out.println("sign url in spot 0 is  " + signUrls.get(0));
+            System.out.println("UserSigns in spot 0 is  " + db.getUserSign(signUrls.get(0)));
+            System.out.println("The category in the selected usersign is  " + db.getUserSign(signUrls.get(0)).getCategory());
+            System.out.println("cat ref is  " + "categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
+
+
+            System.out.println("Getting options from " + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
             DatabaseReference mCatRef = db.getRef("categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
             mCatRef.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -427,6 +413,7 @@ public class CardSwiping extends AppCompatActivity {
                     int count=0;
                     Random rand = new Random();
                     int rand1, rand2, rand3;
+                    System.out.println(Integer.toString((int) dataSnapshot.getChildrenCount()));
                     do{
                         rand1= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
                     }while(rand1 == signOnTopPosition );
@@ -448,7 +435,7 @@ public class CardSwiping extends AppCompatActivity {
                         count++;
                     }
                     //Get the correct answer sign and add it as an option
-                    options.add(db.getUserSign(signUrls.get(signOnTopPosition)));
+                    options.add(new Sign(db.getUserSign(signUrls.get(signOnTopPosition))));
                     Collections.shuffle(options);
                     System.out.println("signobtop index is " + signOnTopPosition+
                             "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  "+

@@ -3,7 +3,7 @@ package com.henry.signapp;
 /**
  * Created by Henry on 12/8/2016.
  */
-public class UserSign {
+public class UserSign{
     private String title, url, category;
     boolean mastered=false;
 
@@ -11,7 +11,9 @@ public class UserSign {
     public UserSign(){
 
     }
-    public UserSign(String title, String url, String category){
+
+
+    public UserSign(String category, String url, String title){
         this.category = category;
         this.title = title;
         this.url = url;

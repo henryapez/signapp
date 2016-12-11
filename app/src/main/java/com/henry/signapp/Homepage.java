@@ -106,11 +106,13 @@ public class Homepage extends AppCompatActivity {
         ref.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                Sign sign = (Sign) dataSnapshot.getValue(Sign.class);
-                db.setUserSign(sign.getUrl(), sign);
+                UserSign sign = (UserSign) dataSnapshot.getValue(UserSign.class);
+                System.out.println("USERSIGNS IS BEING UPDATED");
+                db.setUserSign(sign.getCategory(), sign.getUrl(), sign.getTitle());
             }
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
+                System.out.println("CHILD WAS CHANGED");
             }
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
@@ -122,6 +124,7 @@ public class Homepage extends AppCompatActivity {
                 Sign sign = dataSnapshot.getValue(Sign.class);
                 Toast.makeText(getApplicationContext(), "REMOVED " + sign.getUrl(), Toast.LENGTH_SHORT).show();
                 db.deleteUserSign(sign.getUrl());
+                db.removeUserSign(sign.getUrl());
 
             }
             @Override
@@ -218,7 +221,8 @@ public class Homepage extends AppCompatActivity {
                 if(listViewColor == null || listViewColor.getColor() == 0 ){
                     listItem.setBackgroundColor(Color.GREEN);
                     //User wants to follow this sign, add to deck in db and local deck
-                    db.addUserSign(signList.get(position), clickedCategory);
+                    db.addUserSign(signList.get(position).getCategory(), signList.get(position).getUrl(), signList.get(position).getTitle());
+
                 }else {
                     //User wants to remove sign from his deck
                    listItem.setBackgroundColor(0x00000000);

@@ -25,6 +25,12 @@ public class Sign {
 
     }
 
+    public Sign(UserSign sign){
+        this.category = sign.getCategory();
+        this.title = sign.getTitle();
+        this.url = sign.getUrl();
+    }
+
     //getters & setter methods for SignGif
     public String getUrl(){
         return url;
