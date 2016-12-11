@@ -131,10 +131,6 @@ public class Homepage extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
-
-
-
     }
 
         /*
