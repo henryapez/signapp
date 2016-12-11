@@ -5,7 +5,7 @@ package com.henry.signapp;
  */
 public class UserSign {
     private String title, url, category;
-    boolean mastered;
+    boolean mastered=false;
 
 
     public UserSign(){
