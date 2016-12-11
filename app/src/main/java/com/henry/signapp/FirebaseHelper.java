@@ -17,23 +17,30 @@ import java.util.HashMap;
 
 public class FirebaseHelper {
 
-    private FirebaseDatabase db;
-    private FirebaseUser fbUser;
-    private DatabaseReference mUsersRef;     //reference for all users in database
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+    private static FirebaseHelper instance;
+    private DatabaseReference mUsersRef = db.getReference("users");     //reference for all users in database
     private DatabaseReference userRef;      //reference for a specific user
 
     //HashMap of user's signs (Key is the url)
-    private HashMap<String, UserSign> userSigns = new HashMap<String, UserSign>();;
+    private HashMap<String, UserSign> userSigns = new HashMap<String, UserSign>();
 
     //constructor
     public FirebaseHelper() {
-        db = FirebaseDatabase.getInstance();
-        fbUser = FirebaseAuth.getInstance().getCurrentUser();
-        mUsersRef = db.getReference("users");
+
     }
 
     public FirebaseDatabase getDB(){
         return db;
+    }
+
+
+    public static FirebaseHelper getInstance() {
+        if (instance == null) {
+            instance = new FirebaseHelper();
+        }
+        return instance;
     }
 
     /*

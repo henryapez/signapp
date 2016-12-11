@@ -41,7 +41,7 @@ public class Homepage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
-        db = new FirebaseHelper();
+        db = FirebaseHelper.getInstance();
         categoryList = new ArrayList<String>();
 
         allCatListView = (ListView) findViewById(R.id.allCategoriesList);

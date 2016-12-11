@@ -43,7 +43,7 @@ public class CardSwiping extends AppCompatActivity {
     private SwipeDeckAdapter adapter;
     private Context context = this;
     //Reference to database Helper
-    private FirebaseHelper db = getDB();
+    private FirebaseHelper db = FirebaseHelper.getInstance();
     //Current User references
     private FirebaseAuth auth;
     //Check Answer button, button displays answer when clicked
@@ -68,7 +68,7 @@ public class CardSwiping extends AppCompatActivity {
         username = useremail.split("@")[0];
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
 
-
+        System.out.println("size of HELPER HASHMAP is " + Integer.toString(db.getUserSigns().size()));
         System.out.println("size of usersigns is " + Integer.toString(signUrls.size()));
         //Set the Swipe card adapter. Shuffle gifs before sending them to the View
         Collections.shuffle(signUrls);
@@ -434,11 +434,14 @@ public class CardSwiping extends AppCompatActivity {
                         count++;
                     }
                     //Get the correct answer sign and add it as an option
-                   // options.add(new Sign(db.getUserSign(signUrls.get(signOnTopPosition))));
+                   // options.add((UserSign) db.getUserSign(signUrls.get(signOnTopPosition)));
                     Collections.shuffle(options);
                     System.out.println("signobtop index is " + signOnTopPosition+
                             "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  "+
                             "  ANSWER IS " + db.getUserSign(signUrls.get(signOnTopPosition)));
+//                    for(int i=0;i<options.size();i++){
+//                        if(options.get(i).getClass()
+//                    }
 
                     TextView options1 = (TextView) parentView.findViewById(R.id.option1);
                     options1.setText(options.get(0).getTitle());
