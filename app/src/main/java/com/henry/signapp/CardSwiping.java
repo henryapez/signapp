@@ -39,12 +39,11 @@ import java.util.Random;
 public class CardSwiping extends AppCompatActivity {
 
     ArrayList<String> signUrls;
-    private ArrayList<Sign> mySigns;
     private SwipeDeck cardStack;
     private SwipeDeckAdapter adapter;
     private Context context = this;
     //Reference to database Helper
-    private FirebaseHelper db = new FirebaseHelper();
+    private FirebaseHelper db = getDB();
     //Current User references
     private FirebaseAuth auth;
     //Check Answer button, button displays answer when clicked

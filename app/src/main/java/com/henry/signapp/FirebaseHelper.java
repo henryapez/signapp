@@ -78,6 +78,7 @@ public class FirebaseHelper {
         UserSign newSign = new UserSign(category, url, title);
         mUsersRef.child(getUsername()).child("myDeck").child(url).setValue(newSign);
         userSigns.put(url, newSign);
+        System.out.println("ADDED SIGN " +url+ " TO MY DECK size of deck is " + userSigns.size());
     }
 
     /*
@@ -89,6 +90,14 @@ public class FirebaseHelper {
         userSigns.remove(id);
     }
 
+
+    /*
+    GET USER SIGN
+
+     */
+    public UserSign getUserSign(String id){
+        return userSigns.get(id);
+    }
     /*
         Get User Signs List
      */
