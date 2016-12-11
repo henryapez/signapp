@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daprlabs.aaron.swipedeck.SwipeDeck;
+import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,26 +33,22 @@ import java.util.Map;
 
 public class Homepage extends AppCompatActivity {
 
-
-    //ListView displaying list in Homepage
-    private ListView categoriesListView;
-    private ArrayAdapter categoriesAdapter;
-    //List containing categories in the Listview
-    private ArrayList<String> categoriesList = new ArrayList<String>();
-    private String clickedCategory;
-    //Need to have Sign objects in correct index so when user clicks sign in view,
-    // Sign object is obtained
-    private ArrayList<Sign> signList = new ArrayList<Sign>();
+    private TextView listMessage;       //Header Label
+    //ListViews displaying list in Homepage
+    private ListView allCatListView, categoryListView, userDeckListView;
+    private ArrayAdapter mAdapter;      //ArrayAdapter for the ListView
 
 
     //Header Label
     private TextView listmessage;
+    private ArrayList<String> categoryList;       //categories for the ListView
+    private String category;                     //category for UserSign
 
     /*
         MAIN FirebaseHelper instance
         Use to obtain references, current user signs, add/remove user signs from user deck, etc.
      */
-    private FirebaseHelper db = FirebaseHelper.getInstance();
+    private FirebaseHelper db;
 
 
 
@@ -59,185 +56,139 @@ public class Homepage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-
+        db = new FirebaseHelper();
+        categoryList = new ArrayList<String>();
 
         /*
             Set Welcome text
-            TODO: Include in the CREATE USER section of the login a request for User name and last name
-            User should be addressed by their name here, not their ID (username)
          */
+        allCatListView = (ListView) findViewById(R.id.allCategoriesList);
+        categoryListView = (ListView) findViewById(R.id.categoryList);
+        userDeckListView = (ListView) findViewById(R.id.userDeckList);
+
+        DatabaseReference ref = db.getRef("users/" + db.getUsername() + "/myDeck");
+        db.initializeHashMap(ref);
 
         TextView welcome = (TextView) findViewById(R.id.welcomeText);
         welcome.setText("Welcome " + db.getUsername());
 
-        listmessage = (TextView) findViewById(R.id.listTitle);
-        listmessage.setText("Sign Categories");
+        listMessage = (TextView) findViewById(R.id.listTitle);
+        listMessage.setText("All Sign Categories");
+
 
         /*
 
         Display the Categories in the Homepage
 
          */
-        categoriesListView = (ListView) findViewById(R.id.deckList);
-        categoriesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
-                android.R.id.text1, categoriesList);
-        categoriesListView.setAdapter(categoriesAdapter);
-        getSignList(db.getRef("categories"),0);
+        getCategories();
+    }
 
-        categoriesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    //Show the categories in the ListView
+    public void getCategories() {
+        categoryList.clear();
+        db.getRef("categories").addChildEventListener(new ChildEventListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                listmessage.setText("All " + categoriesList.get(position) + " category signs");
-                clickedCategory = categoriesList.get(position);
-                getSignList(db.getRef("categories/" + categoriesList.get(position)), 1);
-                setSignListener();
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                categoryList.add(dataSnapshot.getKey());
+                mAdapter.notifyDataSetChanged();
             }
-        });
 
-
-        /*
-
-        GET USER SIGNS FROM THE DATABASE
-        Get the signs and store them globally in the FirebaseHelper
-
-         */
-        DatabaseReference ref = db.getRef("users/"+db.getUsername()+"/myDeck");
-        Toast.makeText(getApplicationContext(), "users/"+db.getUsername()+"/myDeck", Toast.LENGTH_SHORT).show();
-        ref.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
-                UserSign sign = (UserSign) dataSnapshot.getValue(UserSign.class);
-                System.out.println("USERSIGNS IS BEING UPDATED");
-                db.setUserSign(sign.getCategory(), sign.getUrl(), sign.getTitle());
-            }
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String prevChildKey) {
-                System.out.println("CHILD WAS CHANGED");
-            }
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                /*
-                TODO: Currently no way for user to remove gifs as the ListView does not
-                differentiate between signs currently in the deck and once that are not
-                 */
-
-                Sign sign = dataSnapshot.getValue(Sign.class);
-                Toast.makeText(getApplicationContext(), "REMOVED " + sign.getUrl(), Toast.LENGTH_SHORT).show();
-                db.deleteUserSign(sign.getUrl());
-                db.removeUserSign(sign.getUrl());
 
             }
+
             @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String prevChildKey) {
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
             }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
+
             }
         });
-    }
 
-        /*
+        //get the ListView and set the ArrayAdapter
+                allCatListView.setVisibility(View.VISIBLE);
+                categoryListView.setVisibility(View.INVISIBLE);
+                userDeckListView.setVisibility(View.INVISIBLE);
 
-        SHOW CATGORIES LIST IN THE HOMEPAGE
-        type == 0 show categories
-        type == 1 show subcategories
-
-         */
-
-        public void getSignList( DatabaseReference ref, final int type){
-            categoriesList.clear();
-            signList.clear();
-
-            ref.addChildEventListener(new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-                    //If data is added to categories table, add it to global categories and update ListView
-                    //Show Categories
-                    if(type == 0) {
-                        categoriesList.add(dataSnapshot.getKey());
-                        categoriesAdapter.notifyDataSetChanged();
-                    }
-                    //If data is added to a subcategory table, add it to signList and update ListView
-                    //Show Subcategories
-                    if(type == 1){
-                        Sign item = dataSnapshot.getValue(Sign.class);
-                        signList.add(item);
-                        categoriesList.add(item.getTitle());
-                        categoriesAdapter.notifyDataSetChanged();
-                    }
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onCancelled(DatabaseError firebaseError) {
-                }
-            });
-
-        }
-
-
-
-
-
-
-    /*
-        USER SELECTS SIGNS TO ADD TO HIS DECK
-        Display available signs to follow
-
-        TODO:
-        1. Display only the signs in each category that the user is not following, so signs being
-        follows are in green and thus able to be removed. Currently, signs can only be added bc
-        listview does not label signs in the deck as currently in the deck
-        2. Currenlty, if I follow a sign (say the first one) scroll down and you will
-        notice that another sign also gets highlighted in green but does not get added to the
-        database, it shouldnt. But it should not turn green as well.
-        3. When the Categories Listview is visible
-
-
-     */
-
-    public void setSignListener(){
-        categoriesListView = (ListView) findViewById(R.id.deckList);
-        categoriesListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+                android.R.id.text1, categoryList);
+        allCatListView.setAdapter(mAdapter);
+        //if a category is clicked
+        //get the list of signs for that specific category
+        allCatListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id){
-                TextView listItem = (TextView) view.findViewById(android.R.id.text1);
-                Object signClicked = parent.getItemAtPosition(position);
-                ColorDrawable listViewColor = (ColorDrawable) listItem.getBackground();
-                int colorId = 0;
-                //If the color is null (no background color) or 0 (was previously unfollowed)
-                if(listViewColor == null || listViewColor.getColor() == 0 ){
-                    listItem.setBackgroundColor(Color.GREEN);
-                    //User wants to follow this sign, add to deck in db and local deck
-                    db.addUserSign(signList.get(position).getCategory(), signList.get(position).getUrl(), signList.get(position).getTitle());
-
-                }else {
-                    //User wants to remove sign from his deck
-                   listItem.setBackgroundColor(0x00000000);
-                    db.deleteUserSign(signList.get(position).getUrl());
-                }
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                category = categoryList.get(position);
+                System.out.println("    category = " + category);
+                DatabaseReference mRef = db.getRef("categories/" + category);
+                listMessage.setText("All " + category + " category signs");
+                getList(mRef);
             }
         });
     }
+
+    public void getList(DatabaseReference ref){
+        allCatListView.setVisibility(View.INVISIBLE);
+        categoryListView.setVisibility(View.VISIBLE);
+        userDeckListView.setVisibility(View.INVISIBLE);
+        final FirebaseListAdapter<Sign> adapter = new FirebaseListAdapter<Sign>(this, Sign.class,
+                android.R.layout.simple_list_item_1, ref) {
+            @Override
+            protected void populateView(View view, Sign sign, int i) {
+                TextView text = (TextView) view.findViewById(android.R.id.text1);
+                //if sign is in the user's deck
+                if (db.getUserSigns().containsKey(sign.getUrl())) {
+                    //if the user has mastered this sign
+                    if (db.getUserSigns().get(sign.getUrl()).isMastered())
+                        text.setText(sign.getTitle() + ": IS IN YOUR DECK & YOU HAVE MASTERED IT");
+                    else
+                        text.setText(sign.getTitle() + ": IS IN YOUR DECK");
+                }
+                //if sign is not in the user's deck
+                                else{
+                                        text.setText(sign.getTitle());
+                }
+                           }
+                    };
+        categoryListView.setAdapter(adapter);
+        categoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView text = (TextView) findViewById(android.R.id.text1);
+                String url = adapter.getItem(position).getUrl();
+                String title = adapter.getItem(position).getTitle();
+                //sign is in deck -> remove sign from deck
+                if (db.getUserSigns().containsKey(url)) {
+                    text.setText(title);
+                    db.deleteUserSign(url);
+                }
+                //sign is not in deck -> add sign to deck
+                else {
+                    text.setText(title + ": IS IN YOUR DECK");
+                    db.addUserSign(category, url, title);
+                }
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
 
 
     //all gifs button listener shows all available gifs in the list view
        public void allGifsClicked(View view){
-                listmessage = (TextView) findViewById(R.id.listTitle);
-                listmessage.setText("All Categories");
-                getSignList(db.getRef("categories"),0);
+           listmessage = (TextView) findViewById(R.id.listTitle);
+           listmessage.setText("All Categories");
+           getCategories();
     }
 
 
@@ -248,6 +199,7 @@ public class Homepage extends AppCompatActivity {
     public void practiceClicked(View view){
         Intent practiceIntent = new Intent(this, CardSwiping.class);
         startActivity(practiceIntent);
+        finish();
     }
 
     //logout button listener
@@ -258,11 +210,29 @@ public class Homepage extends AppCompatActivity {
 
 
 
-
-
-
+    //shows all sign gifs in the user's deck
     public void myDeckClicked(View v){
-        //TODO query the user's decks
+        allCatListView.setVisibility(View.INVISIBLE);
+        categoryListView.setVisibility(View.INVISIBLE);
+        userDeckListView.setVisibility(View.VISIBLE);
+
+        listMessage = (TextView) findViewById(R.id.listTitle);
+        listMessage.setText("All signs in your deck.");
+
+        ArrayList<UserSign> signList = new ArrayList<UserSign>(db.getUserSigns().values());
+        ArrayList<String> myDeckList = new ArrayList<String>();
+        for(int i = 0; i < signList.size(); i++){
+            //if user has mastered the sign
+            if(signList.get(i).isMastered())
+                myDeckList.add(signList.get(i).getTitle() + ": YOU HAVE MASTERED THIS SIGN");
+            //if user has not mastered this sign
+            else{
+                myDeckList.add(signList.get(i).getTitle());
+            }
+        }
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+                android.R.id.text1, myDeckList);
+        userDeckListView.setAdapter(mAdapter);
     }
 
 

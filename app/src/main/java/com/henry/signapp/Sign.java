@@ -5,8 +5,8 @@ package com.henry.signapp;
  */
 
 public class Sign {
-    private String url, title, category;
-    private int followersCount,mastersCount;
+    private String url, title;
+    private int followers,mastersCount;
     //Only gets updated when a Sign object is in a user deck
     private boolean mastered;
 
@@ -15,48 +15,36 @@ public class Sign {
     public Sign(){
 
     }
-    public Sign(String gifURL, String title){
+    public Sign(String gifURL, String gifTitle){
         url = gifURL;
-        this.title = title;
-        followersCount=0;
+        title = gifTitle;
+        followers=0;
         mastersCount=0;
-        mastered=false;
-        category = "";
-
-    }
-
-    public Sign(UserSign sign){
-        this.category = sign.getCategory();
-        this.title = sign.getTitle();
-        this.url = sign.getUrl();
     }
 
     //getters & setter methods for SignGif
     public String getUrl(){
         return url;
     }
-
     public String getTitle(){
         return title;
     }
-    public String getCategory(){
-        return category;
-    }
-    public void setCategory(String cat){
-        this.category = cat;
-    }
     public int getFollowers(){
-        return followersCount;
+        return followers;
     }
     public int getMastersCount(){
         return mastersCount;
     }
-    public void setFollowers(int count){
-        followersCount = count;
+    public void addFollower(){
+        followers++;
     }
-    public void setMastersCount(int count){
-        mastersCount = count;
+    public void addMastersCount(){
+        mastersCount++;
     }
 
-
+    //toString
+    public String toString(){
+        return "URL: " + getUrl() + ", title: " + getTitle() +
+                ", followers: " + getFollowers() + ", mastersCount: " + getMastersCount();
+    }
 }

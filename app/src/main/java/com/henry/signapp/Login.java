@@ -2,7 +2,6 @@ package com.henry.signapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -16,14 +15,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+//import android.support.annotation.NonNull;
+
 public class Login extends AppCompatActivity {
-    public final static String EMAIL = "com.henry.signapp.EMAIL";
     private EditText emailText, passwordText;
     private Button newUser, login;
     private String email, password;
     private FirebaseAuth auth;
-    private FirebaseHelper db = FirebaseHelper.getInstance();
-    
+    private FirebaseHelper db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +37,6 @@ public class Login extends AppCompatActivity {
             startActivity(new Intent(Login.this, Homepage.class));
             finish();
         }
-
-
-
         //user's email & password EditText
         emailText = (EditText) findViewById(R.id.userEmail);
         passwordText = (EditText) findViewById(R.id.userPassword);
@@ -84,6 +81,7 @@ public class Login extends AppCompatActivity {
                                 }
                                 //if creating a new user was successful
                                 else{
+                                    db = new FirebaseHelper();
                                     db.addNewUser(email);
                                     Intent intent = new Intent(Login.this, Homepage.class);
                                     startActivity(intent);
@@ -109,21 +107,20 @@ public class Login extends AppCompatActivity {
                 }
                 auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener(Login.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        //if login was unsuccessful
-                        if( !task.isSuccessful() ){
-                            Toast.makeText(getApplicationContext(), "Error occurred during login.",
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        //if login was successful
-                        else{
-                            Intent intent = new Intent(Login.this, Homepage.class);
-                            db.signIn();
-                            startActivity(intent);
-                        }
-                    }
-                });
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                //if login was unsuccessful
+                                if( !task.isSuccessful() ){
+                                    Toast.makeText(getApplicationContext(), "Error occurred during login.",
+                                            Toast.LENGTH_LONG).show();
+                                }
+                                //if login was successful
+                                else{
+                                    Intent intent = new Intent(Login.this, Homepage.class);
+                                    startActivity(intent);
+                                }
+                            }
+                        });
             }
         });
     }

@@ -1,48 +1,44 @@
 package com.henry.signapp;
 
 /**
- * Created by Henry on 12/8/2016.
+ * Created by tom on 12/8/16.
  */
-public class UserSign{
-    private String title, url, category;
-    boolean mastered=false;
 
+public class UserSign {
+    String category, url, title;
+    boolean mastered;
 
+    //constructors
     public UserSign(){
 
     }
-
-
-    public UserSign(String category, String url, String title){
-        this.category = category;
-        this.title = title;
-        this.url = url;
+    public UserSign(String gifCategory, String gifURL, String gifTitle){
+        category = gifCategory;
+        url = gifURL;
+        title = gifTitle;
+        mastered = false;
     }
 
+    //getters & setters
+    public String getCategory(){
+        return category;
+    }
     public String getUrl(){
-        return this.url;
-    }
-    public void setUrl(String url){
-        this.url = url;
-    }
-    public void setTitle(String title){
-        this.title = title;
+        return url;
     }
     public String getTitle(){
         return title;
     }
-    public void setMastered(boolean value){
-        this.mastered = value;
-    }
-    public boolean getMastered(){
+    public boolean isMastered(){
         return mastered;
     }
-    public void setCategory(String cat){
-        this.category = cat;
-    }
-    public String getCategory(){
-        return category;
+    public void setMastered(boolean gifMastered){
+        mastered = gifMastered;
     }
 
-
+    //toString
+    public String toString(){
+        return "category: " + getCategory() + ", URL: " + getUrl() + ", title: " + getTitle() +
+                ", mastered: " + isMastered();
+    }
 }

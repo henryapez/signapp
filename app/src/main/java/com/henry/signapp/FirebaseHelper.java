@@ -27,53 +27,29 @@ import java.util.Map;
  */
 
 public class FirebaseHelper {
-    private static FirebaseHelper instance = null;
-    FirebaseDatabase db = FirebaseDatabase.getInstance();
-
 
     //private User user;
     private FirebaseUser FBuser;
     private User currentuser;
 
-
-
-    //ListView displaying list in Homepage
-    private ArrayList<String> deckList = new ArrayList<String>();
-    private ListView deckListView;
-    private ArrayAdapter deckAdapter;
+    private FirebaseDatabase db;
+    private FirebaseUser fbUser;
+    private DatabaseReference mUsersRef;     //reference for all users in database
+    private DatabaseReference userRef;
 
     private HashMap<String, UserSign> userSigns = new HashMap<String, UserSign>();
-
-    //Root Firebase reference
-    private final String ROOT_URL = "https://signapp-aab9e.firebaseio.com/";
-    private DatabaseReference mUsersRef = db.getReference("users");
-    private DatabaseReference userRef;
-    private DatabaseReference mCatsRef = db.getReference("categories");
-    private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(ROOT_URL);
-
 
     //constructors
     public FirebaseHelper() {
         db = FirebaseDatabase.getInstance();
-        FBuser = FirebaseAuth.getInstance().getCurrentUser();
+        fbUser = FirebaseAuth.getInstance().getCurrentUser();
+        mUsersRef = db.getReference("users");
     }
 
-    public FirebaseHelper(FirebaseDatabase myDB) {
-        db = myDB;
-    }
-
-
-    public FirebaseDatabase getDb() {
+    public FirebaseDatabase getDB(){
         return db;
     }
 
-
-    public static FirebaseHelper getInstance() {
-        if (instance == null) {
-            instance = new FirebaseHelper();
-        }
-        return instance;
-    }
 
     /*
         GET REFS HELPER
@@ -81,7 +57,6 @@ public class FirebaseHelper {
      */
     public DatabaseReference getRef(String type) {
         return db.getReference(type);
-
     }
 
     /*
@@ -89,34 +64,18 @@ public class FirebaseHelper {
         User has just signed up
      */
     public void addNewUser(String email) {
-        FBuser = FirebaseAuth.getInstance().getCurrentUser();
-        if(FBuser.getEmail().equals(email)){
-            User newUser = new User(email);
-            mUsersRef.child(newUser.getUsername()).setValue(newUser);
-            currentuser = newUser;
-            userRef = db.getReference("users"+getUsername());
-        }
-    }
-
-    /*
-        SIGN IN
-    */
-    public void signIn() {
-        FBuser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference mref = getRef("users/"+FBuser.getEmail().split("@")[0]);
-        // Attach a listener to read the data at our posts reference
-        mref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                User user = (User) dataSnapshot.getValue(User.class);
-                currentuser = user;
-                userRef = db.getReference("users"+getUsername());
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println("The read failed: " + databaseError.getCode());
-            }
-        });
+//        FBuser = FirebaseAuth.getInstance().getCurrentUser();
+//        if(FBuser.getEmail().equals(email)){
+//            User newUser = new User(email);
+//            mUsersRef.child(newUser.getUsername()).setValue(newUser);
+//            currentuser = newUser;
+//            userRef = db.getReference("users"+getUsername());
+//        }
+        String userName = email.split("@")[0];
+        mUsersRef.child(userName).setValue(userName);
+        userRef = db.getReference("users/" + getUsername());
+        userRef.child("email").setValue(email);
+        userSigns = new HashMap<String, UserSign>();
     }
 
 
@@ -131,10 +90,7 @@ public class FirebaseHelper {
     GET USERNAME
      */
     public String getUsername() {
-        if(FBuser != null)
-             return FBuser.getEmail().split("@")[0];
-        else
-            return null;
+        return fbUser.getEmail().split("@")[0];
     }
 
 
@@ -146,8 +102,6 @@ public class FirebaseHelper {
     public void addUserSign(String category, String url, String title){
         UserSign newSign = new UserSign(category, url, title);
         mUsersRef.child(getUsername()).child("myDeck").child(url).setValue(newSign);
-
-
         userSigns.put(url, newSign);
     }
 
@@ -174,11 +128,11 @@ public class FirebaseHelper {
     /*
         Set The user's current global signs
      */
-    public void setUserSign(String category, String url, String title){
-        UserSign newSign = new UserSign(category, url, title);
-        this.userSigns.put(newSign.getUrl(), newSign);
-        System.out.println("USERSIGNS HAS BEEN SET USERSIGNS HASHMAP IS  " + userSigns.size());
-    }
+//    public void setUserSign(String category, String url, String title){
+//        UserSign newSign = new UserSign(category, url, title);
+//        this.userSigns.put(newSign.getUrl(), newSign);
+//        System.out.println("USERSIGNS HAS BEEN SET USERSIGNS HASHMAP IS  " + userSigns.size());
+//    }
 
     /*
       Set The user's current global signs
@@ -195,10 +149,7 @@ public class FirebaseHelper {
         return userSigns.size();
     }
 
-    /*
-       Get User Signs HashMap
-    */
-    public HashMap<String ,UserSign> getUserSigns(){
+    public HashMap<String, UserSign> getUserSigns(){
         return userSigns;
     }
 
@@ -209,33 +160,34 @@ public class FirebaseHelper {
         return userSigns.get(id);
     }
 
+//initializes hashmap with user's deck
+     public void initializeHashMap(DatabaseReference ref){
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                UserSign sign = dataSnapshot.getValue(UserSign.class);
+                userSigns.put(sign.getUrl(), sign);
+            }
 
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-    /*
-    DELETE CATEGORY
-     */
-    public void deleteCategory(String id){
-        mCatsRef.child(id).setValue(null);
-    }
+            }
 
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
 
+            }
 
-    /*
-   ADD SIGN TO A CATEGORY
-        Add a gif to a Category
-    */
-    public void addCategorySign(String category, String id){
-       /*
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
 
-        */
-    }
-
-    /*
-    DELETE SIGN IN A CATEGORY
-     */
-    public void deleteCategorySign(String category, String id){
-        mCatsRef.child(category).child(id).setValue(null);
-    }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+     }
 
 
 

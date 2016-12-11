@@ -44,7 +44,7 @@ public class CardSwiping extends AppCompatActivity {
     private SwipeDeckAdapter adapter;
     private Context context = this;
     //Reference to database Helper
-    private FirebaseHelper db = FirebaseHelper.getInstance();
+    private FirebaseHelper db = new FirebaseHelper();
     //Current User references
     private FirebaseAuth auth;
     //Check Answer button, button displays answer when clicked
@@ -435,7 +435,7 @@ public class CardSwiping extends AppCompatActivity {
                         count++;
                     }
                     //Get the correct answer sign and add it as an option
-                    options.add(new Sign(db.getUserSign(signUrls.get(signOnTopPosition))));
+                   // options.add(new Sign(db.getUserSign(signUrls.get(signOnTopPosition))));
                     Collections.shuffle(options);
                     System.out.println("signobtop index is " + signOnTopPosition+
                             "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  "+
@@ -448,7 +448,7 @@ public class CardSwiping extends AppCompatActivity {
                     TextView options3 = (TextView) parentView.findViewById(R.id.option3);
                     options3.setText(options.get(2).getTitle());
                     TextView options4 = (TextView) parentView.findViewById(R.id.option4);
-                    options4.setText(options.get(3).getTitle());
+                    options4.setText("HEY");
 
 
                 }

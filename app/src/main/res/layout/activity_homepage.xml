@@ -53,11 +53,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"/>
-    <ListView
-        android:id="@+id/deckList"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="320dp">
-    </ListView>
+        android:layout_height="wrap_content">
+
+        <ListView
+            android:id="@+id/allCategoriesList"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:visibility="visible">
+        </ListView>
+        <ListView
+            android:id="@+id/categoryList"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:visibility="invisible">
+        </ListView>
+        <ListView
+            android:id="@+id/userDeckList"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:visibility="invisible">
+        </ListView>
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -77,5 +96,6 @@
             android:text="@string/logoutButton"
             android:onClick="logout"/>
     </LinearLayout>
+
 
 </LinearLayout>
