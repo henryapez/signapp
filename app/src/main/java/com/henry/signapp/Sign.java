@@ -5,7 +5,7 @@ package com.henry.signapp;
  */
 
 public class Sign {
-    private String url, title;
+    private String url, title, category;
     private int followersCount,mastersCount;
     //Only gets updated when a Sign object is in a user deck
     private boolean mastered;
@@ -21,6 +21,7 @@ public class Sign {
         followersCount=0;
         mastersCount=0;
         mastered=false;
+        category = "";
 
     }
 
@@ -32,7 +33,12 @@ public class Sign {
     public String getTitle(){
         return title;
     }
-
+    public String getCategory(){
+        return category;
+    }
+    public void setCategory(String cat){
+        this.category = cat;
+    }
     public int getFollowers(){
         return followersCount;
     }

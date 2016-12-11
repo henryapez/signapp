@@ -1,5 +1,6 @@
 package com.henry.signapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -31,7 +32,9 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class CardSwiping extends AppCompatActivity {
 
@@ -44,9 +47,10 @@ public class CardSwiping extends AppCompatActivity {
     private FirebaseHelper db = FirebaseHelper.getInstance();
     //Current User references
     private FirebaseAuth auth;
+    //Check Answer button, button displays answer when clicked
+    private Button checkAnswer;
 
     //Firebase database reference for queries
-
     private String useremail, username;
     float x1,x2;
     float y1, y2;
@@ -66,11 +70,6 @@ public class CardSwiping extends AppCompatActivity {
         cardStack = (SwipeDeck) findViewById(R.id.swipe_deck);
 
 
-
-
-
-
-
         System.out.println("size of usersigns is " + Integer.toString(signUrls.size()));
         //Set the Swipe card adapter. Shuffle gifs before sending them to the View
         Collections.shuffle(signUrls);
@@ -78,15 +77,40 @@ public class CardSwiping extends AppCompatActivity {
         if(cardStack != null){
             cardStack.setAdapter(adapter);
         }
+
+        cardStack.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                Log.i("MainActivity", "onViewAttachedToWindow " + cardStack.getAdapterIndex());
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                Log.i("MainActivity", "onViewDetachedFromWindow " + cardStack.getAdapterIndex());
+            }
+        });
         cardStack.setCallback(new SwipeDeck.SwipeDeckCallback() {
             @Override
             public void cardSwipedLeft(long positionInAdapter) {
-                Log.i("MainActivity", "card was swiped left, position in adapter: " + positionInAdapter);
+                Log.i("MainActivity", "card was swiped left, position in adapter: " + cardStack.getAdapterIndex());
+                //Log.i("MainActivity", "child count is " + cardStack.getFocusedChild().getId());
+
+
+
+
             }
 
             @Override
             public void cardSwipedRight(long positoinInAdapter) {
                 Log.i("MainActivity", "card was swiped right, position in adapter: " + positoinInAdapter);
+
+
+
+            }
+
+            public void scardSwipedRight(long positoinInAdapter) {
+                Log.i("MainActivity", "card was swiped right, position in adapter: " + positoinInAdapter);
+
 
             }
         });
@@ -109,12 +133,14 @@ public class CardSwiping extends AppCompatActivity {
             }
         });
 
-        Button checkAnswer = (Button) findViewById(R.id.checkAnswer);
+       checkAnswer = (Button) findViewById(R.id.checkAnswer);
         checkAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                signUrls.add("a sample string.");
-                adapter.notifyDataSetChanged();
+                if(checkAnswer.getText().equals("Answer"))
+                    checkAnswer.setText(db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getTitle());
+                else
+                    checkAnswer.setText("Answer");
             }
         });
 
@@ -123,49 +149,50 @@ public class CardSwiping extends AppCompatActivity {
 
     }
 
-    // onTouchEvent () method gets called when User performs any touch event on screen
-    // Handled left and right swipe ONLY when one card is present
-    //If multiple card are present, there are multiple View layers. Touch events are detected in the SwipeDeckAdapter
-    @Override
-    public boolean onTouchEvent(MotionEvent touchevent)
-    {
-        switch (touchevent.getAction()) {
-            // when user first touches the screen we get x and y coordinate
-            case MotionEvent.ACTION_DOWN: {
-                x1 = touchevent.getX();
-                y1 = touchevent.getY();
-                break;}
-            case MotionEvent.ACTION_UP: {
-                x2 = touchevent.getX();
-                y2 = touchevent.getY();
-                //if Right swipe when only one card is visible
-                if (x1 < x2) {
-                   // cardStack.swipeTopCardRight(180);
-                    Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
-                }
-                //Left swipe when only one card is visible
-                if (x1 > x2) {
-                  ///  cardStack.swipeTopCardLeft(180);
-                    Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
-                }
-                // if UP to Down sweep event on screen
-                if (y1 < y2) {
-                    Toast.makeText(this, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
-                }
-                //if Down to UP sweep event on screen
-                if (y1 > y2) {
-                    Toast.makeText(this, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
-                }
-                break;
-            }
-        }
-        return false;
-    }
+//    // onTouchEvent () method gets called when User performs any touch event on screen
+//    // Handled left and right swipe ONLY when one card is present
+//    //If multiple card are present, there are multiple View layers. Touch events are detected in the SwipeDeckAdapter
+//    @Override
+//    public boolean onTouchEvent(MotionEvent touchevent)
+//    {
+//        switch (touchevent.getAction()) {
+//            // when user first touches the screen we get x and y coordinate
+//            case MotionEvent.ACTION_DOWN: {
+//                x1 = touchevent.getX();
+//                y1 = touchevent.getY();
+//                break;}
+//            case MotionEvent.ACTION_UP: {
+//                x2 = touchevent.getX();
+//                y2 = touchevent.getY();
+//                //if Right swipe when only one card is visible
+//                if (x1 < x2) {
+//                   // cardStack.swipeTopCardRight(180);
+//                    Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
+//                }
+//                //Left swipe when only one card is visible
+//                if (x1 > x2) {
+//                  ///  cardStack.swipeTopCardLeft(180);
+//                    Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
+//                }
+//                // if UP to Down sweep event on screen
+//                if (y1 < y2) {
+//                    Toast.makeText(this, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
+//                }
+//                //if Down to UP sweep event on screen
+//                if (y1 > y2) {
+//                    Toast.makeText(this, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
+//                }0
+//                break;
+//            }
+//        }
+//        return false;
+//    }
 
     public class OnSwipeTouchListener implements View.OnTouchListener {
 
         private final GestureDetector gestureDetector;
         private String currentGif;
+
         public OnSwipeTouchListener (Context ctx, String selectedGif){
             gestureDetector = new GestureDetector(ctx, new GestureListener());
             currentGif = selectedGif;
@@ -221,12 +248,22 @@ public class CardSwiping extends AppCompatActivity {
 
             //Get top card gif and keep it in the deck to view later
             signUrls.add(currentGif);
+            checkAnswer.setText("Answer");
+            adapter.setSignOnTopPosition();
+            View currentView = (View) findViewById(R.id.swipeLayout);
+            adapter.setOptions(currentView);
+
             cardStack.swipeTopCardRight(180);
             adapter.notifyDataSetChanged();
+
         }
         public void onSwipeLeft() {
+            checkAnswer.setText("Answer");
             Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
-
+            adapter.setSignOnTopPosition();
+            View currentView = (View) findViewById(R.id.swipeLayout);
+            adapter.setOptions(currentView);
+            //Set Swiped sign as maastered int he user's deck
             db.getRef("users").child(currentGif).child("mastered").setValue(true);
             cardStack.swipeTopCardLeft(180);
 
@@ -238,18 +275,63 @@ public class CardSwiping extends AppCompatActivity {
     } // END SWIPE CLASS Listener
 
     public class SwipeDeckAdapter extends BaseAdapter {
-        private View vv;
         private List<String> data;
+        //CardSwiping main Activity context
         private Context context;
         private int position;
+        private boolean loadedAllSigns=false;
+        //
+        private Sign signOnTop;
+        private int signOnTopPosition;
+        private ArrayList<Sign> options = new ArrayList<Sign>();
+        private boolean initialOptions=true;
+        //Answer View
+        TextView topAnswerView;
 
         public SwipeDeckAdapter(List<String> data, Context context) {
             this.data = data;
             this.context = context;
+            this.signOnTopPosition = 0;
         }
 
         public int getPosition(){
             return position;
+        }
+
+        /*
+            When a left or right swipe occur, signOnTop and SignOnTopPosition are increamented
+            to the next View (Sign Card) in the deck
+
+            Clear the leaving sign answer so that it wont show in the future
+         */
+//        public String updateSignOnTop(){
+//            if(topAnswerView != null)
+//                topAnswerView.setText("");
+//            signOnTop = (Sign) db.getUserSign(data.get(++signOnTopPosition));
+//            return data.get(signOnTopPosition);
+//        }
+
+        /*
+            When Answer button is clicked, sample_text in the view card on top is updated to the answer
+         */
+//        public void setAnswerText(){
+//            if(signOnTop == null)
+//                signOnTop = (Sign) db.getUserSign(data.get(signOnTopPosition));
+//            Log.i("Position of sign " +signOnTop.getTitle()+ " is ", Integer.toString(signOnTopPosition));
+//            topAnswerView = (TextView) viewHolder.get(signOnTopPosition).findViewById(R.id.sample_text);
+//            topAnswerView.setText(signOnTop.getTitle());
+//            adapter.notifyDataSetChanged();
+//            Log.i("On TOP sign text  " +topAnswerView.getText()+"  ", Integer.toString(signOnTopPosition));
+//        }
+
+        public void setSignOnTopPosition(){
+            signOnTopPosition++;
+        }
+        public ArrayList<Sign> getOptions(){
+            return options;
+        }
+        public int getSignOnTopPosition(){
+            return signOnTopPosition;
         }
         @Override
         public int getCount() {
@@ -267,10 +349,11 @@ public class CardSwiping extends AppCompatActivity {
         }
 
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, final ViewGroup parent) {
 
             View v = convertView;
-            vv = v;
+
+
             if (v == null) {
                 LayoutInflater inflater = getLayoutInflater();
                 // normally use a viewholder
@@ -278,17 +361,21 @@ public class CardSwiping extends AppCompatActivity {
             }
             this.position = position;
             ImageView imageView = (ImageView) v.findViewById(R.id.offer_image);
-            //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
-            Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
-            TextView textView = (TextView) v.findViewById(R.id.sample_text);
-           // TextView masteredText = (TextView) v.findViewById(R.id.left_image);
-            // TextView practiceText = (TextView) v.findViewById(R.id.right_image);
-            String item = (String)getItem(position);
-            //masteredText.setText("Mastered Sign");
-            //practiceText.setText("Keep Practicing");
-            textView.setText(item);
 
-            v.setOnTouchListener(new OnSwipeTouchListener(context, item) {
+                //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
+                Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
+               // viewHolder.add(v);
+            if(initialOptions) {
+                View parentView = (View) parent.getParent();
+                setOptions(parentView);
+                initialOptions=false;
+            }
+
+            Log.i("Position of sign " +data.get(position)+ " is ", Integer.toString(position));
+
+            //If the Answer button is pressed, display the sign title on the current sign ontop
+
+            v.setOnTouchListener(new OnSwipeTouchListener(context,data.get(position) ) {
                 String answer ="";
                 public void onSwipeTop() {
                     answer = "top";
@@ -305,7 +392,7 @@ public class CardSwiping extends AppCompatActivity {
                 }
             });
 
-            imageView.setOnTouchListener(new OnSwipeTouchListener(context, item) {
+            imageView.setOnTouchListener(new OnSwipeTouchListener(context, data.get(position)) {
                 String answer ="";
                 public void onSwipeTop() {
                     answer = "top";
@@ -324,7 +411,66 @@ public class CardSwiping extends AppCompatActivity {
 
 
             });
+
+
+
             return v;
+        }
+
+        public void setOptions(final View parentView){
+            //Get all of this signs cateogry gifs and get three random signs for options
+            System.out.println("THE URL categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
+            DatabaseReference mCatRef = db.getRef("categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
+            mCatRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    int count=0;
+                    Random rand = new Random();
+                    int rand1, rand2, rand3;
+                    do{
+                        rand1= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
+                    }while(rand1 == signOnTopPosition );
+                    do{
+                        rand2= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
+                    }while(rand2 == signOnTopPosition || rand2 == rand1);
+                    do{
+                        rand3= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
+                    }while(rand3 == signOnTopPosition || rand3 == rand1 || rand3==rand2);
+
+                    System.out.println("SIZE OF CATEGORY=  " + Long.toString(dataSnapshot.getChildrenCount())
+                            +" rands are  "+Integer.toString(rand1) + " "
+                            + Integer.toString(rand2)+"  "+Integer.toString(rand3));
+                    for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()) {
+                        if(count == rand1 || count ==rand2 || count == rand3){
+                            System.out.println("FOUND OPTIONS  " + messageSnapshot.getValue(Sign.class).getTitle());
+                            options.add((Sign) messageSnapshot.getValue(Sign.class));
+                        }
+                        count++;
+                    }
+                    //Get the correct answer sign and add it as an option
+                    options.add(db.getUserSign(signUrls.get(signOnTopPosition)));
+                    Collections.shuffle(options);
+                    System.out.println("signobtop index is " + signOnTopPosition+
+                            "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  "+
+                            "  ANSWER IS " + db.getUserSign(signUrls.get(signOnTopPosition)));
+
+                    TextView options1 = (TextView) parentView.findViewById(R.id.option1);
+                    options1.setText(options.get(0).getTitle());
+                    TextView options2 = (TextView) parentView.findViewById(R.id.option2);
+                    options2.setText(options.get(1).getTitle());
+                    TextView options3 = (TextView) parentView.findViewById(R.id.option3);
+                    options3.setText(options.get(2).getTitle());
+                    TextView options4 = (TextView) parentView.findViewById(R.id.option4);
+                    options4.setText(options.get(3).getTitle());
+
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    System.out.println("The read failed: " + databaseError.getCode());
+                }
+            });
         }
     }
 }

@@ -38,7 +38,7 @@ public class Homepage extends AppCompatActivity {
     private ArrayAdapter categoriesAdapter;
     //List containing categories in the Listview
     private ArrayList<String> categoriesList = new ArrayList<String>();
-
+    private String clickedCategory;
     //Need to have Sign objects in correct index so when user clicks sign in view,
     // Sign object is obtained
     private ArrayList<Sign> signList = new ArrayList<Sign>();
@@ -88,12 +88,11 @@ public class Homepage extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 listmessage.setText("All " + categoriesList.get(position) + " category signs");
+                clickedCategory = categoriesList.get(position);
                 getSignList(db.getRef("categories/" + categoriesList.get(position)), 1);
                 setSignListener();
             }
         });
-
-
 
 
         /*
@@ -223,7 +222,7 @@ public class Homepage extends AppCompatActivity {
                 if(listViewColor == null || listViewColor.getColor() == 0 ){
                     listItem.setBackgroundColor(Color.GREEN);
                     //User wants to follow this sign, add to deck in db and local deck
-                    db.addUserSign(signList.get(position));
+                    db.addUserSign(signList.get(position), clickedCategory);
                 }else {
                     //User wants to remove sign from his deck
                    listItem.setBackgroundColor(0x00000000);

@@ -146,8 +146,9 @@ public class FirebaseHelper {
     ADD SIGN TO USER MyDeck IN FIREBASE
         Add Sign to the User's database deck
      */
-    public void addUserSign(Sign sign) {
+    public void addUserSign(Sign sign, String clickedCategry) {
        mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).setValue(sign);
+        mUsersRef.child(getUsername()).child("myDeck").child(sign.getUrl()).child("category").setValue(clickedCategry);
 
 
 
@@ -171,10 +172,24 @@ public class FirebaseHelper {
     }
 
     /*
-        Get User Signs List
+        Get User Signs HashMap
      */
+    public int getDeckSize(){
+        return userSigns.size();
+    }
+
+    /*
+       Get User Signs HashMap
+    */
     public HashMap<String ,Sign> getUserSigns(){
         return userSigns;
+    }
+
+    /*
+        Get User Signs HashMap
+     */
+    public Sign getUserSign(String id){
+        return userSigns.get(id);
     }
 
 
@@ -204,6 +219,8 @@ public class FirebaseHelper {
     public void deleteCategorySign(String category, String id){
         mCatsRef.child(category).child(id).setValue(null);
     }
+
+
 
 
 
