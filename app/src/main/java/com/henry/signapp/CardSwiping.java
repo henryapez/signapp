@@ -3,6 +3,8 @@ package com.henry.signapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -13,6 +15,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -47,13 +52,23 @@ public class CardSwiping extends AppCompatActivity {
     //Current User references
     private FirebaseAuth auth;
     //Check Answer button, button displays answer when clicked
-    private Button checkAnswer;
-
+    private Button showAnswer;
+    private Button knowIt, keepIt;
     //Firebase database reference for queries
     private String useremail, username;
     float x1,x2;
     float y1, y2;
     private static final String TAG = "CardSwiping";
+
+
+    private int signOnTopPosition;
+    private boolean loadedAllSigns=false;
+    private ArrayList<String> options = new ArrayList<String>();
+    private boolean initialOptions=true;
+    private String currentGif;
+
+    private Button options2,options1,options3,options4;
+    private int chances=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,58 +103,34 @@ public class CardSwiping extends AppCompatActivity {
                 Log.i("MainActivity", "onViewDetachedFromWindow " + cardStack.getAdapterIndex());
             }
         });
-        cardStack.setCallback(new SwipeDeck.SwipeDeckCallback() {
-            @Override
-            public void cardSwipedLeft(long positionInAdapter) {
-                Log.i("MainActivity", "card was swiped left, position in adapter: " + cardStack.getAdapterIndex());
-                //Log.i("MainActivity", "child count is " + cardStack.getFocusedChild().getId());
 
-
-
-
-            }
-
-            @Override
-            public void cardSwipedRight(long positoinInAdapter) {
-                Log.i("MainActivity", "card was swiped right, position in adapter: " + positoinInAdapter);
-
-
-
-            }
-
-            public void scardSwipedRight(long positoinInAdapter) {
-                Log.i("MainActivity", "card was swiped right, position in adapter: " + positoinInAdapter);
-
-
-            }
-        });
 
 
 
         //example of buttons triggering events on the deck
-        Button btn = (Button) findViewById(R.id.knowIt);
-        btn.setOnClickListener(new View.OnClickListener() {
+        knowIt = (Button) findViewById(R.id.knowIt);
+        knowIt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardStack.swipeTopCardLeft(180);
+                mastersASignActions();
             }
         });
-        Button btn2 = (Button) findViewById(R.id.practiceIt);
-        btn2.setOnClickListener(new View.OnClickListener() {
+        keepIt = (Button) findViewById(R.id.practiceIt);
+        keepIt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardStack.swipeTopCardRight(180);
+                keepASignInDeckActions();
             }
         });
 
-       checkAnswer = (Button) findViewById(R.id.checkAnswer);
-        checkAnswer.setOnClickListener(new View.OnClickListener() {
+      showAnswer = (Button) findViewById(R.id.showAnswer);
+        showAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkAnswer.getText().equals("Answer"))
-                    checkAnswer.setText(db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getTitle());
+                if(showAnswer.getText().equals("Answer") && !(adapter.getSignOnTopPosition() == signUrls.size()))
+                    showAnswer.setText(db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getTitle());
                 else
-                    checkAnswer.setText("Answer");
+                    showAnswer.setText("Answer");
             }
         });
 
@@ -148,49 +139,64 @@ public class CardSwiping extends AppCompatActivity {
 
     }
 
-//    // onTouchEvent () method gets called when User performs any touch event on screen
-//    // Handled left and right swipe ONLY when one card is present
-//    //If multiple card are present, there are multiple View layers. Touch events are detected in the SwipeDeckAdapter
-//    @Override
-//    public boolean onTouchEvent(MotionEvent touchevent)
-//    {
-//        switch (touchevent.getAction()) {
-//            // when user first touches the screen we get x and y coordinate
-//            case MotionEvent.ACTION_DOWN: {
-//                x1 = touchevent.getX();
-//                y1 = touchevent.getY();
-//                break;}
-//            case MotionEvent.ACTION_UP: {
-//                x2 = touchevent.getX();
-//                y2 = touchevent.getY();
-//                //if Right swipe when only one card is visible
-//                if (x1 < x2) {
-//                   // cardStack.swipeTopCardRight(180);
-//                    Toast.makeText(this, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
-//                }
-//                //Left swipe when only one card is visible
-//                if (x1 > x2) {
-//                  ///  cardStack.swipeTopCardLeft(180);
-//                    Toast.makeText(this, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
-//                }
-//                // if UP to Down sweep event on screen
-//                if (y1 < y2) {
-//                    Toast.makeText(this, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
-//                }
-//                //if Down to UP sweep event on screen
-//                if (y1 > y2) {
-//                    Toast.makeText(this, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
-//                }0
-//                break;
-//            }
-//        }
-//        return false;
-//    }
+    /*
+        Check the user's multiple choice input
+        CORRECT: User has mastered that sign and swipe left
+        INCORRECT: User has not mastered that sign so keep it in the deck
+
+     */
+    public void checkAnswer(View v){
+        chances++;
+        Button userAnswer = (Button) findViewById(v.getId());
+        String answer = (String) userAnswer.getText();
+        if(db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getTitle().equals(answer)){
+           showAnswer.setText("Correct!");
+            showAnswer.setBackgroundColor(ContextCompat.getColor(context, R.color.correctGreen));
+            options1.setText("Swipe Left to Master this Sign");
+            options2.setText("Swipe Right to Keep it in the Deck");
+            options3.setText("");
+            options4.setText("");
+            options1.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            options2.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            options3.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            options4.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+
+            final Animation animation = new AlphaAnimation(1.0f, 0.7f); // Change alpha from fully visible to invisible
+            animation.setDuration(500); // duration - half a second
+            animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
+            animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
+            animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
+            knowIt.startAnimation(animation);
+            keepIt.startAnimation(animation);
+
+        }else{
+            /*
+                USER CLICKED AN INCORRECT ANSWER
+                User has two attempts to answer
+             */
+            if(chances==2){
+                Toast.makeText(context, "Incorrect, we'll try later!", Toast.LENGTH_LONG).show();
+                keepASignInDeckActions();
+                chances=0;
+                options1.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+                options2.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+                options3.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+                options4.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            }else{
+                Toast.makeText(context, "One more chance and we'll try again later.", Toast.LENGTH_LONG).show();
+                userAnswer.setBackgroundColor(ContextCompat.getColor(context, R.color.IncorrectRed));
+            }
+
+
+        }
+    }
+
+
 
     public class OnSwipeTouchListener implements View.OnTouchListener {
 
         private final GestureDetector gestureDetector;
-        private String currentGif;
+
 
         public OnSwipeTouchListener (Context ctx, String selectedGif){
             gestureDetector = new GestureDetector(ctx, new GestureListener());
@@ -244,27 +250,11 @@ public class CardSwiping extends AppCompatActivity {
         public void onSwipeRight() {
 
             Toast.makeText(context, "Right Swipe detected adding " + currentGif, Toast.LENGTH_LONG).show();
-
-            //Get top card gif and keep it in the deck to view later
-            signUrls.add(currentGif);
-            checkAnswer.setText("Answer");
-            adapter.setSignOnTopPosition();
-            View currentView = (View) findViewById(R.id.swipeLayout);
-            adapter.setOptions(currentView);
-
-            cardStack.swipeTopCardRight(180);
-            adapter.notifyDataSetChanged();
+            keepASignInDeckActions();
 
         }
         public void onSwipeLeft() {
-            checkAnswer.setText("Answer");
-            Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
-            adapter.setSignOnTopPosition();
-            View currentView = (View) findViewById(R.id.swipeLayout);
-            adapter.setOptions(currentView);
-            //Set Swiped sign as maastered int he user's deck
-            db.getRef("users").child(db.getUsername()).child("myDeck").child(currentGif).child("mastered").setValue(true);
-            cardStack.swipeTopCardLeft(180);
+           mastersASignActions();
 
         }
         public void onSwipeTop() {
@@ -278,19 +268,12 @@ public class CardSwiping extends AppCompatActivity {
         //CardSwiping main Activity context
         private Context context;
         private int position;
-        private boolean loadedAllSigns=false;
-        //
-        private Sign signOnTop;
-        private int signOnTopPosition;
-        private ArrayList<Sign> options = new ArrayList<Sign>();
-        private boolean initialOptions=true;
-        //Answer View
-        TextView topAnswerView;
+
 
         public SwipeDeckAdapter(List<String> data, Context context) {
             this.data = data;
             this.context = context;
-            this.signOnTopPosition = 0;
+            signOnTopPosition = 0;
         }
 
         public int getPosition(){
@@ -302,7 +285,7 @@ public class CardSwiping extends AppCompatActivity {
         public void setSignOnTopPosition(){
             signOnTopPosition++;
         }
-        public ArrayList<Sign> getOptions(){
+        public ArrayList<String> getOptions(){
             return options;
         }
         public int getSignOnTopPosition(){
@@ -328,7 +311,6 @@ public class CardSwiping extends AppCompatActivity {
 
             View v = convertView;
 
-
             if (v == null) {
                 LayoutInflater inflater = getLayoutInflater();
                 // normally use a viewholder
@@ -346,44 +328,12 @@ public class CardSwiping extends AppCompatActivity {
                 initialOptions=false;
             }
 
-            Log.i("Position of sign " +data.get(position)+ " is ", Integer.toString(position));
-
             //If the Answer button is pressed, display the sign title on the current sign ontop
 
             v.setOnTouchListener(new OnSwipeTouchListener(context,data.get(position) ) {
-                String answer ="";
-                public void onSwipeTop() {
-                    answer = "top";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
-
-                }
-
-                public void onSwipeBottom() {
-                    answer = "bottom";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
-
-                }
             });
 
             imageView.setOnTouchListener(new OnSwipeTouchListener(context, data.get(position)) {
-                String answer ="";
-                public void onSwipeTop() {
-                    answer = "top";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
-
-                }
-
-                public void onSwipeBottom() {
-                    answer = "bottom";
-                    Log.i("Hardware Accel type:", answer);
-                    Toast.makeText(context, "gggggg", Toast.LENGTH_LONG).show();
-
-                }
-
-
 
             });
 
@@ -392,65 +342,68 @@ public class CardSwiping extends AppCompatActivity {
             return v;
         }
 
-        public void setOptions(final View parentView){
-            if(options.size()>0)
-                options.clear();
+
+    }
+
+    public void setOptions(final View parentView) {
+        if (options.size() > 0)
+            options.clear();
+        if (!(signOnTopPosition == signUrls.size())) {
             //Get all of this signs category gifs and get three random signs for options
-            System.out.println("SignonTopPosition is  " + adapter.getSignOnTopPosition());
-            System.out.println("UserSigns size in helper is  " + db.getUserSigns().size());
-            System.out.println("sign url in spot 0 is  " + signUrls.get(0));
-            System.out.println("UserSigns in spot 0 is  " + db.getUserSign(signUrls.get(0)));
-            System.out.println("The category in the selected usersign is  " + db.getUserSign(signUrls.get(0)).getCategory());
-            System.out.println("cat ref is  " + "categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
-
-
-            System.out.println("Getting options from " + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
             DatabaseReference mCatRef = db.getRef("categories/" + db.getUserSign(signUrls.get(adapter.getSignOnTopPosition())).getCategory());
             mCatRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    int count=0;
+                    int count = 0;
+
+
                     Random rand = new Random();
-                    int rand1, rand2, rand3;
-                    System.out.println(Integer.toString((int) dataSnapshot.getChildrenCount()));
-                    do{
-                        rand1= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
-                    }while(rand1 == signOnTopPosition );
-                    do{
-                        rand2= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
-                    }while(rand2 == signOnTopPosition || rand2 == rand1);
-                    do{
-                        rand3= rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
-                    }while(rand3 == signOnTopPosition || rand3 == rand1 || rand3==rand2);
+                    int totalsize = (int) dataSnapshot.getChildrenCount();
+                    int rand1, rand2, rand3, rand4;
+                    System.out.println(" TOTAL SIZE OF CATEGORY IS  " + Integer.toString(totalsize));
+                    do {
+                        rand1 = rand.nextInt(totalsize) + 0;
+                    } while (rand1 == signOnTopPosition);
+                    do {
+                        rand2 = rand.nextInt(totalsize) + 0;
+                    } while (rand2 == signOnTopPosition || rand2 == rand1);
+                    do {
+                        rand3 = rand.nextInt(totalsize) + 0;
+                    } while (rand3 == signOnTopPosition || rand3 == rand1 || rand3 == rand2);
 
                     System.out.println("SIZE OF CATEGORY=  " + Long.toString(dataSnapshot.getChildrenCount())
-                            +" rands are  "+Integer.toString(rand1) + " "
-                            + Integer.toString(rand2)+"  "+Integer.toString(rand3));
+                            + " rands are  " + Integer.toString(rand1) + " "
+                            + Integer.toString(rand2) + "  " + Integer.toString(rand3));
                     for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()) {
-                        if(count == rand1 || count ==rand2 || count == rand3){
+                        if (count == rand1 || count == rand2 || count == rand3) {
+                            rand4 = rand.nextInt((int) dataSnapshot.getChildrenCount()) + 0;
                             System.out.println("FOUND OPTIONS  " + messageSnapshot.getValue(Sign.class).getTitle());
-                            options.add((Sign) messageSnapshot.getValue(Sign.class));
+                            options.add(messageSnapshot.getValue(Sign.class).getTitle());
                         }
                         count++;
                     }
-                    //Get the correct answer sign and add it as an option
-                   // options.add((UserSign) db.getUserSign(signUrls.get(signOnTopPosition)));
+                    //If one of the randon signs obtained is the answer, add 'Sign' instead of the answer (so we dont have two correct options)
+                    if (options.contains(db.getUserSign(signUrls.get(signOnTopPosition)).getTitle())) {
+                        options.add("Sign");
+                    } else {
+                        //Get the correct answer sign and add it as an option
+                        options.add(db.getUserSign(signUrls.get(signOnTopPosition)).getTitle());
+                    }
+                    //Randomize the options
                     Collections.shuffle(options);
-                    System.out.println("signobtop index is " + signOnTopPosition+
-                            "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  "+
+                    System.out.println("signobtop index is " + signOnTopPosition +
+                            "  OPTIONS LENGTH IS  " + Integer.toString(options.size()) + "  " +
                             "  ANSWER IS " + db.getUserSign(signUrls.get(signOnTopPosition)));
-//                    for(int i=0;i<options.size();i++){
-//                        if(options.get(i).getClass()
-//                    }
 
-                    TextView options1 = (TextView) parentView.findViewById(R.id.option1);
-                    options1.setText(options.get(0).getTitle());
-                    TextView options2 = (TextView) parentView.findViewById(R.id.option2);
-                    options2.setText(options.get(1).getTitle());
-                    TextView options3 = (TextView) parentView.findViewById(R.id.option3);
-                    options3.setText(options.get(2).getTitle());
-                    TextView options4 = (TextView) parentView.findViewById(R.id.option4);
-                    options4.setText("HEY");
+
+                    options1 = (Button) parentView.findViewById(R.id.option1);
+                    options1.setText(options.get(0));
+                    options2 = (Button) parentView.findViewById(R.id.option2);
+                    options2.setText(options.get(1));
+                    options3 = (Button) parentView.findViewById(R.id.option3);
+                    options3.setText(options.get(2));
+                    options4 = (Button) parentView.findViewById(R.id.option4);
+                    options4.setText(options.get(3));
 
 
                 }
@@ -461,5 +414,43 @@ public class CardSwiping extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    public void keepASignInDeckActions(){
+         /*
+           Get top card gif and keep it in the deck to view later
+         */
+        knowIt.clearAnimation();
+        keepIt.clearAnimation();
+        //Add it to the swipe deck adapter list
+        signUrls.add(currentGif);
+        //Clear the answer button
+        showAnswer.setText("Answer");
+        showAnswer.setBackgroundColor(ContextCompat.getColor(context, R.color.purple));
+        //Right swiped = User has unmastered or not mastered this sign yet
+        db.setSignMastered(currentGif, false);
+        //Update the index tracker to be the index of the next sign in the deck
+        adapter.setSignOnTopPosition();
+        //Set multiple choice options based on the 'new' sign on top's category
+        View currentView = (View) findViewById(R.id.swipeLayout);
+        setOptions(currentView);
+        //Swipe the card right
+        cardStack.swipeTopCardRight(180);
+        //Notify adapter of card swipe
+        adapter.notifyDataSetChanged();
+    }
+
+    public void mastersASignActions(){
+        knowIt.clearAnimation();
+        keepIt.clearAnimation();
+        showAnswer.setText("Answer");
+        showAnswer.setBackgroundColor(ContextCompat.getColor(context, R.color.purple));
+        Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
+        adapter.setSignOnTopPosition();
+        View currentView = (View) findViewById(R.id.swipeLayout);
+        setOptions(currentView);
+        //Set Swiped sign as maastered int he user's deck
+        db.setSignMastered(currentGif, true);
+        cardStack.swipeTopCardLeft(180);
     }
 }

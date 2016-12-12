@@ -118,6 +118,7 @@ public class FirebaseHelper {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 UserSign sign = dataSnapshot.getValue(UserSign.class);
+                System.out.println("ADDED USER SIGN FROM LOCAL DECK " + dataSnapshot.getValue(UserSign.class).getUrl());
                 userSigns.put(sign.getUrl(), sign);
             }
 
@@ -128,7 +129,9 @@ public class FirebaseHelper {
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                //Updadte the deck if a sign was removed from the user's myDeck
+                System.out.println("REMOVED USER SIGN FROM LOCAL DECK " + dataSnapshot.getValue(UserSign.class).getUrl());
+                userSigns.remove(dataSnapshot.getValue(UserSign.class).getUrl());
             }
 
             @Override
@@ -141,6 +144,15 @@ public class FirebaseHelper {
 
             }
         });
+    }
+
+
+    /*
+        SET A USER'S SIGN MASTERED ATTRIBUTE
+
+     */
+    public void setSignMastered(String sign, boolean value){
+        mUsersRef.child(getUsername()).child("myDeck").child(sign).child("mastered").setValue(value);
     }
 
 }
