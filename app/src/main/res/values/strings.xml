@@ -13,7 +13,7 @@
 
     <string name="title_activity_homepage">Homepage</string>
     <string name="student">Welcome Student</string>
-    <string name="totalScore">Total Score: 0 / 100</string>
+    <string name="totalScore">Total Score: 0 / 0</string>
     <string name="allGifsButton">All Signs</string>
     <string name="myDeckButton">My Deck</string>
     <string name="masteredButton">Mastered Signs</string>

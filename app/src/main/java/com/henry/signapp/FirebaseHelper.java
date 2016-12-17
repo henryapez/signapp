@@ -78,6 +78,19 @@ public class FirebaseHelper {
     }
 
     /*
+    GET TOTAL MASTERED SIGNS IN THE USERS DECK
+     */
+    public int getMasteredSigns(){
+        int masteredSigns = 0;
+
+        for(HashMap.Entry<String, UserSign> entry : userSigns.entrySet()){
+            if(entry.getValue().isMastered())
+                masteredSigns++;
+        }
+        return masteredSigns;
+    }
+
+    /*
     ADD SIGN TO USER MyDeck IN FIREBASE
         Add Sign to the User's database deck
      */

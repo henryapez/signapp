@@ -21,8 +21,10 @@ import java.util.ArrayList;
 public class Homepage extends AppCompatActivity {
 
     private TextView listMessage;       //Header Label
+    private TextView scoreTextView;     //score TextView
+
     //ListViews displaying list in Homepage
-    private ListView allCatListView, categoryListView, userDeckListView;
+    private ListView allCatListView, categoryListView, userDeckListView, masteredDeckListView;
 
     private ArrayAdapter mAdapter;      //ArrayAdapter for the ListView
 
@@ -47,6 +49,7 @@ public class Homepage extends AppCompatActivity {
         allCatListView = (ListView) findViewById(R.id.allCategoriesList);
         categoryListView = (ListView) findViewById(R.id.categoryList);
         userDeckListView = (ListView) findViewById(R.id.userDeckList);
+        masteredDeckListView = (ListView) findViewById(R.id.masteredDeckList);
 
         //initialize user's deck (puts database to hashmap)
         DatabaseReference ref = db.getRef("users/"+db.getUsername()+"/myDeck");
@@ -55,9 +58,11 @@ public class Homepage extends AppCompatActivity {
         //welcome message on home screen
         TextView welcome = (TextView) findViewById(R.id.welcomeText);
         welcome.setText("Welcome " + db.getUsername());
+        scoreTextView = (TextView) findViewById(R.id.scoreText);
+        scoreTextView.setText("Your Total Score:" + db.getMasteredSigns() + " / " + db.getUserSigns().size());
 
         listMessage = (TextView) findViewById(R.id.listTitle);
-        listMessage.setText("All Sign Categories");
+        listMessage.setText("All Sign Categories. Click a category to see all signs for that category.");
 
         //Display the Categories in the Homepage
         getCategories();
@@ -65,6 +70,13 @@ public class Homepage extends AppCompatActivity {
 
     //Show the categories in the ListView
     public void getCategories(){
+        allCatListView.setVisibility(View.VISIBLE);
+        categoryListView.setVisibility(View.INVISIBLE);
+        userDeckListView.setVisibility(View.INVISIBLE);
+        masteredDeckListView.setVisibility(View.INVISIBLE);
+
+        scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
+
         categoryList.clear();
         db.getRef("categories").addChildEventListener(new ChildEventListener() {
             @Override
@@ -94,10 +106,6 @@ public class Homepage extends AppCompatActivity {
             }
         });
         //get the ListView and set the ArrayAdapter
-        allCatListView.setVisibility(View.VISIBLE);
-        categoryListView.setVisibility(View.INVISIBLE);
-        userDeckListView.setVisibility(View.INVISIBLE);
-
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
                 android.R.id.text1, categoryList);
         allCatListView.setAdapter(mAdapter);
@@ -108,14 +116,12 @@ public class Homepage extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 category = categoryList.get(position);
-                System.out.println("    category = " + category);
                 DatabaseReference mRef = db.getRef("categories/" + category);
-                listMessage.setText("All " + category + " category signs");
+                listMessage.setText("All " + category + " category signs. Click a sign to add or remove it from your deck.");
 
                 getList(mRef);
             }
         });
-
     }
 
     //shows sub categories in the ListView
@@ -123,6 +129,7 @@ public class Homepage extends AppCompatActivity {
         allCatListView.setVisibility(View.INVISIBLE);
         categoryListView.setVisibility(View.VISIBLE);
         userDeckListView.setVisibility(View.INVISIBLE);
+        masteredDeckListView.setVisibility(View.INVISIBLE);
 
         final FirebaseListAdapter<Sign> adapter = new FirebaseListAdapter<Sign>(this, Sign.class,
                 android.R.layout.simple_list_item_1, ref) {
@@ -144,6 +151,7 @@ public class Homepage extends AppCompatActivity {
                 }
             }
         };
+        scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
         categoryListView.setAdapter(adapter);
 
         categoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -155,8 +163,8 @@ public class Homepage extends AppCompatActivity {
 
                 //sign is in deck -> remove sign from deck
                 if (db.getUserSigns().containsKey(url)) {
-                    text.setText(title);
                     db.deleteUserSign(url);
+                    text.setText(title);
                 }
                 //sign is not in deck -> add sign to deck
                 else {
@@ -164,15 +172,17 @@ public class Homepage extends AppCompatActivity {
                     db.addUserSign(category, url, title);
                 }
                 adapter.notifyDataSetChanged();
+                scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
             }
         });
+
     }
 
 
     //all gifs button listener shows all available gifs in the list view
     public void allGifsClicked(View view){
-        listMessage = (TextView) findViewById(R.id.listTitle);
-        listMessage.setText("All Categories");
+        listMessage.setText("All Categories. Click a category to see all signs for that category.");
+        scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
         getCategories();
     }
 
@@ -193,26 +203,64 @@ public class Homepage extends AppCompatActivity {
         allCatListView.setVisibility(View.INVISIBLE);
         categoryListView.setVisibility(View.INVISIBLE);
         userDeckListView.setVisibility(View.VISIBLE);
+        masteredDeckListView.setVisibility(View.INVISIBLE);
+
 
         listMessage = (TextView) findViewById(R.id.listTitle);
-        listMessage.setText("All signs in your deck.");
+        listMessage.setText("All signs in your deck. Click a sign to remove it from your deck.");
 
-        ArrayList<UserSign> signList = new ArrayList<UserSign>(db.getUserSigns().values());
-        ArrayList<String> myDeckList = new ArrayList<String>();
+        final ArrayList<UserSign> signList = new ArrayList<UserSign>(db.getUserSigns().values());
+        final ArrayList<String> myDeckList = new ArrayList<String>();
         for(int i = 0; i < signList.size(); i++){
             //if user has mastered the sign
-            if(signList.get(i).isMastered())
+            if(signList.get(i).isMastered()) {
                 myDeckList.add(signList.get(i).getTitle() + ": YOU HAVE MASTERED THIS SIGN");
-                //if user has not mastered this sign
+            }
+            //if user has not mastered this sign
             else{
                 myDeckList.add(signList.get(i).getTitle());
             }
         }
+        scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
 
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
                 android.R.id.text1, myDeckList);
         userDeckListView.setAdapter(mAdapter);
+
+        userDeckListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String url = signList.get(position).getUrl();
+                db.deleteUserSign(url);
+                signList.remove(position);
+                mAdapter.remove(mAdapter.getItem(position));
+                scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
+            }
+        });
+
+
     }
 
+    //show all mastered signs when clicked
+    public void masteredClicked(View view){
+        allCatListView.setVisibility(View.INVISIBLE);
+        categoryListView.setVisibility(View.INVISIBLE);
+        userDeckListView.setVisibility(View.INVISIBLE);
+        masteredDeckListView.setVisibility(View.VISIBLE);
 
+        listMessage.setText("All mastered signs in your deck.");
+
+        final ArrayList<UserSign> signList = new ArrayList<UserSign>(db.getUserSigns().values());
+        ArrayList<String> myDeckList = new ArrayList<String>();
+        for(int i = 0; i < signList.size(); i++){
+            //if user has mastered the sign
+            if(signList.get(i).isMastered())
+                myDeckList.add(signList.get(i).getTitle());
+        }
+        scoreTextView.setText("Your Total Score: " + db.getMasteredSigns() + " / " + db.getUserSigns().size());
+
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+                android.R.id.text1, myDeckList);
+        masteredDeckListView.setAdapter(mAdapter);
+    }
 }

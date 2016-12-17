@@ -13,15 +13,16 @@
             android:id="@+id/welcomeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="18sp"
             android:text="@string/student"/>
         <TextView
-            android:id="@+id/totalScoreTxt"
+            android:id="@+id/scoreText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="18sp"
             android:gravity="end"
-            android:textSize="15sp"
             android:text="@string/totalScore"/>
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,33 +47,44 @@
             android:id="@+id/masteredButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/masteredButton"/>
+            android:text="@string/masteredButton"
+            android:onClick="masteredClicked"/>
     </LinearLayout>
     <TextView
         android:id="@+id/listTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="All Leisure Activities category signs. Click a sign to add or remove it from your deck."
         android:gravity="center"/>
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="0dp"
+        android:layout_weight="100">
 
         <ListView
             android:id="@+id/allCategoriesList"
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="match_parent"
+
             android:visibility="visible">
         </ListView>
         <ListView
             android:id="@+id/categoryList"
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="match_parent"
             android:visibility="invisible">
         </ListView>
         <ListView
             android:id="@+id/userDeckList"
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="match_parent"
+            android:visibility="invisible">
+        </ListView>
+        <ListView
+            android:id="@+id/masteredDeckList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:visibility="invisible">
         </ListView>
     </RelativeLayout>
