@@ -200,7 +200,7 @@ public class CardSwiping extends AppCompatActivity {
 
         public OnSwipeTouchListener (Context ctx, String selectedGif){
             gestureDetector = new GestureDetector(ctx, new GestureListener());
-            currentGif = selectedGif;
+
         }
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -318,7 +318,7 @@ public class CardSwiping extends AppCompatActivity {
             }
             this.position = position;
             ImageView imageView = (ImageView) v.findViewById(R.id.offer_image);
-
+            System.out.println("UPLOADING THE GIF " + data.get(position));
                 //Picasso.with(context).load(R.drawable.food).fit().centerCrop().into(imageView);
                 Glide.with(context).load("http://www.lifeprint.com/asl101/gifs-animated/"+data.get(position)+".gif").into(imageView);
                // viewHolder.add(v);
@@ -326,7 +326,10 @@ public class CardSwiping extends AppCompatActivity {
                 View parentView = (View) parent.getParent();
                 setOptions(parentView);
                 initialOptions=false;
+                currentGif = data.get(position);
+                System.out.println("CURRENT GIF IN INITIALOptions " + currentGif);
             }
+
 
             //If the Answer button is pressed, display the sign title on the current sign ontop
 
@@ -346,6 +349,7 @@ public class CardSwiping extends AppCompatActivity {
     }
 
     public void setOptions(final View parentView) {
+
         if (options.size() > 0)
             options.clear();
         if (!(signOnTopPosition == signUrls.size())) {
@@ -431,6 +435,8 @@ public class CardSwiping extends AppCompatActivity {
         db.setSignMastered(currentGif, false);
         //Update the index tracker to be the index of the next sign in the deck
         adapter.setSignOnTopPosition();
+        currentGif = db.getUserSign(signUrls.get(signOnTopPosition)).getUrl();
+        System.out.println("CURRENT GIF IN SETOPTIONS " + currentGif);
         //Set multiple choice options based on the 'new' sign on top's category
         View currentView = (View) findViewById(R.id.swipeLayout);
         setOptions(currentView);
@@ -446,11 +452,16 @@ public class CardSwiping extends AppCompatActivity {
         showAnswer.setText("Answer");
         showAnswer.setBackgroundColor(ContextCompat.getColor(context, R.color.purple));
         Toast.makeText(context, "Left Swipe detected mastering " + currentGif, Toast.LENGTH_LONG).show();
-        adapter.setSignOnTopPosition();
+
         View currentView = (View) findViewById(R.id.swipeLayout);
         setOptions(currentView);
         //Set Swiped sign as maastered int he user's deck
+        System.out.println("GIF IN MASTERED SWIPE LEFT " + currentGif);
         db.setSignMastered(currentGif, true);
+        adapter.setSignOnTopPosition();
+        currentGif = db.getUserSign(signUrls.get(signOnTopPosition)).getUrl();
+        System.out.println("CURRENT GIF IN SETOPTIONS " + currentGif);
         cardStack.swipeTopCardLeft(180);
+        adapter.notifyDataSetChanged();
     }
 }
